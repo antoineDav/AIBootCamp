@@ -1,0 +1,215 @@
+    _   ___ ___           _    ___                 ___           _            ___         _        _ _ 
+   /_\ |_ _| _ ) ___  ___| |_ / __|__ _ _ __  _ __| __|_ _  __ _(_)_ _  ___  |_ _|_ _  __| |_ __ _| | |
+  / _ \ | || _ \/ _ \/ _ \  _| (__/ _` | '  \| '_ \ _|| ' \/ _` | | ' \/ -_)  | || ' \(_-<  _/ _` | | |
+ /_/ \_\___|___/\___/\___/\__|\___\__,_|_|_|_| .__/___|_||_\__, |_|_||_\___| |___|_||_/__/\__\__,_|_|_|
+                                             |_|           |___/                                       
+                                                                                                                                         
+CONTENTS OF THIS FILE
+---------------------
+
+ * Requirements
+ * Installation
+ * Building and customizing your AIBot
+ * Testing locally
+ * Debugging your AIBot (Coming soon)
+ * Sending a game job to the AIBootCamp Server
+ * F.A.Q (Coming soon)
+
+REQUIREMENTS
+----------------------
+
+Note : The AIBot development environment only supports Windows for now.
+
+AIBootCamp AIBot requires:
+
+- 7zip (http://www.7-zip.org/).
+  * Windows PATH environment variable must contain the 7zip folder containing its main executable (7z.exe).
+
+- Visual Studio 2017 (Community, Professional, Enterprise)
+  * Windows PATH environment variable must contain the MSbuild folder containing its main executable (msbuild.exe).
+  * Make sure to install v141 Platform Toolset
+
+  IMPORTANT: Make sure to install C++ language packages
+
+  Ex.: C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe
+
+- CMake (https://cmake.org/) (3.9.1 have been tested. More recent versions should also work but haven't been tested yet)
+  * Windows PATH environment variable must contain the CMake folder containing its main executable (cmake.exe).
+
+- GoogleDrive Drive application (https://www.google.ca/drive/download/)
+
+- Python (https://www.python.org/) (3.6.2)
+ * Windows PATH environment variable must contain the Python folder containing its main executable (python.exe).
+
+- AIBootCamp Engine (INF781 shared folder)
+   Copy the AIBootCamp Engine from the INF781 shared folder into your AIBootCamp folder. 
+
+   => IMPORTANT : Don't use network drive like Z: W:
+
+   Here's the suggested file Layout you should use : 
+
+    <AIBOOTCAMP_DIR>/Bots/
+    <AIBOOTCAMP_DIR>/Bots/<YOUR_AIBOT_FOLDERS>/...
+    <AIBOOTCAMP_DIR>/Engine/
+    <AIBOOTCAMP_DIR>/Engine/AIBootCamp_Data/...
+    <AIBOOTCAMP_DIR>/Engine/AIBootCamp.exe
+    <AIBOOTCAMP_DIR>/Engine/ChangeLog.txt
+    <AIBOOTCAMP_DIR>/Engine/Version.txt
+    <AIBOOTCAMP_DIR>/Levels/...
+    <AIBOOTCAMP_DIR>/Maps/...
+
+
+   The version should match the AIBot DevEnv version.
+
+   Ex : Every DevEnv version 0.2xx should be compatible with every 0.2xx of the AIBootCampEngine 
+
+INSTALLATION
+----------------------------
+
+1. Install required softwares and update windows PATH environment variable.
+
+2. Map the shared folder on GoogleDrive. You should have received an email to accept an invitation for a shared folder on GoogleDrive. This folder will be used to
+   communicate data between your PC and the AIBootCamp game server. Once you've accepted the invitation, the shared folder will appear in the catagory "Shared with me". Once you've
+   located the shared folder, right-click on it and select "Add to My Drive".
+
+==> VERY IMPORTANT : DO NOT EDIT/ADD/REMOVE ANY FILE FROM YOUR GOOGLEDRIVE SHARED FOLDERS <==
+
+Make sure you work in an external location to avoid lag because on continous syncing occuring with shared drive and any other sync issues. Only retrieve from the matches executed on the AIBoorCamp Server
+
+3. Edit the file TeamInfo.team
+
+   This is a configuration files containing important information for the build system to work. Here is the list of parameters that needs to be configured:
+
+  - GOOGLE_DRIVE_DIR : The path of the GoogleDrive folder shared with you for this project. If you don't have one, contact the Teacher.
+
+    ex.: GOOGLE_DRIVE_DIR=C:\GoogleDrive\INF781\AIBootCamp\<TEAM_NAME>
+
+  - AIBOOTCAMP_ENGINE_DIR : The path to your AIBootcamp engine directory
+
+  - CMAKE_PATH : The path to your Python install directory. **  
+  - PYTHON_PATH : The path to your Python install directory. ** 
+  - SEVENZIP_PATH : The path to your Python install directory. ** 
+
+  ** Only specify the path if you cannot edit your Windows PATH environment variable or you're having PATH conflicts with multiple installed versions of that program. 
+  Leave the filed empty if using the version included in your Windows PATH environment variable.
+
+
+4. Check that your programs are installed properly (only if you are using the path environment variable to locate your programs)
+
+  - Open a PowerShell command prompt and execute the following commands:
+
+    > whereis 7z
+    > whereis cmake
+    > whereis python
+    > whereis msbuild
+
+    All commands should return the path where the PATH windows environment variable is configured for each programs.
+
+    ex. > whereis 7z
+        C:\Program Files\7-Zip\7z.exe
+
+        > whereis cmake
+        C:\Program Files\cmake-3.4.3-win32-x86\bin\cmake.exe
+
+        > whereis python
+        C:\Program Files (x86)\Python35-32\python.EXE
+
+        > whereis msbuild
+        C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe
+
+5. Add the AIBootCamp environment variable
+
+   - Open the Environment Variables Editor window
+        * You can reach it with WinBreak or by right-clicking the Start button. From there, select “Advanced system settings” → “Environment Variables.
+   - Add a new variable named AIBOOTCAMP_DIR in User variable (or system variable if you have access), pointing to the top folder of your install AIBOOTCAMP framework (see section 2)
+   - Close the editor windows.
+   - Open a PowerShell command prompt and execute the following command:
+      > Get-ChildItem Env:
+
+   - Check if yhe AIBOOTCAMP variable is in the list and set to the expected path. 
+
+      ==> If not, you probably need to reboot Windows to make sure the environment variables changes are available.
+
+BUILDING AND CUSTOMIZING YOUR AIBOT
+--------------------------------------------
+
+1. Generating AIBot Visual Studio solution
+
+   In the AIBot folder, execute the rebuild_vis_sln_x64.bat command. This will generate the build-solution-x64 folder, where you can find the AIBot.sln visual studio solution file.
+
+2. Opening and managing the solution
+
+   Open the AIBot.sln solution in Visual Studio. You'll see the 3 following projects : aibot, ALL_BUILD and ZERO_CHECK. 
+   Make sure your set aibot project as the startup project by right clicking the aibot solution and choosing the "Set as Startup Project" option.
+
+   To create your custom decision-making system, you should implement your own BotLogic implementation. In the provided project, an empty class implementation is provided named MyBotLogic.
+
+   The AIBot framework will be explained in detail in class.
+
+3. Building Solution
+
+   Choose the proper Build Target (Realease|Debug) and simply build the selected project (F7).
+
+   => Executable will be in Debug or Release folder, depending which target you've selected
+   => Executing the generated aibot.exe program don't do much as it should be connected to the an AIBootCamp game app/server. To run a game see the "TESTING LOCALLY" and "SENDING A GAME JOB TO THE AIBOOTCAMP SERVER" sections.
+
+5. Adding/removing files to the solution
+
+   To add/remove files to the solution, you need to edit the CMakeLists.txt file in the AIBot folder. This files contains all the info for CMake to generate and build VisualStudio solutions.
+
+   Look for the "add_executable" section and add/remove files in the list, and regenerate the solution using the rebuild_vis_sln_x64.bat command.
+
+   IMPORTANT : It is highly recommanded to add your custom AIBot development files in the MyBotLogic folder to ease to process of migrating your code to the future versions of the DevKit.
+
+6. Cleaning the project
+
+   To clean the project, execute the CleanAll.bat command in the AIBot folder. This will remove the build-solution-x64 folder and all temporary files generated to snd job to the AIBootCamp game server.
+   All other files will be left as is.
+
+
+TESTING LOCALLY
+--------------------------------------------
+
+To test locally, open a PowerShell command prompt and execute the PlayLocalMatch.bat command with the following parameters:
+
+  > PlayLocalMatch.bat [AIBOT_PATH] [LEVEL_ID]
+
+Ex. PlayLocalMatch.bat E:\AIBootCamp\AIBot\DevEnv\AIBot_v0.23\build-solution-x64\Debug L_003
+
+ => The list of LEVEL_ID available for a given AIBootCampEngine can be found in the level folder located in the AIBootCamp Engine directory.
+
+Results will be available in a folder named LocalMatchResults. In that folder 2 other folders will be created :
+
+  - aibotlog   containing the logged data during the execution of your bot.
+  - gamelog    containing the game results
+
+To see the results, just double-click on the AIBootCampResults.html to see it in your browser.
+
+=> IMPORTANT : Current version require internet connexion to see/generate results for your browser.
+
+
+DEBUGGING YOUR AIBOT
+--------------------------------------------
+
+Coming soon
+
+
+SENDING A GAME JOB TO THE AIBOOTCAMP SERVER
+--------------------------------------------
+
+To send a job to the AIBootCamp game server, execute the SubmitAIBot.bat command. This will package your current directory in a .job file and write it to your googledrive folder defined by the TeamInfo.team file.
+
+To select the BuildTarget (Debug|Release) that should be used by the AIBootCamp Server, execute the command adding 1 argument (DEBUG|RELEASE). Default or invalid input will be interpreted as a RELEASE request. 
+
+Ex.: SubmitAIBot.bat DEBUG
+
+When the AIBootCamp game server discover the new job to execute, it will move the job file in an external job execution queue location and will run your AIBot against all maps define by the requested module(s) (all by default).
+When completed, a new folder will appear in your GoogleDrive folder. This new folder will contain the results, the game log and debug logs, and all the replay files.
+
+Requesting Specific Module(s) : Coming Soon
+
+
+F.A.Q
+--------------------------------------------
+
+Coming soon
