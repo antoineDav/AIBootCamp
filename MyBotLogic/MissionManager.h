@@ -60,9 +60,17 @@ public:
 			throw new DuplicateObjectiveException;
 		}
 #endif // DEBUG
-		availableGoalMissions[missionId] = inProgressGoalMissions[missionId];
-		inProgressGoalMissions.erase(missionId);
-		newGoalFound = true;
+		if (missionId >= 0) {
+			availableGoalMissions[missionId] = inProgressGoalMissions[missionId];
+			inProgressGoalMissions.erase(missionId);
+			newGoalFound = true;
+		}
+		
+	}
+
+	void returnCoopMission(int missionId) {
+		availableCoopMissions[missionId] = inProgressCoopMissions[missionId];
+		inProgressCoopMissions.erase(missionId);
 	}
 
 	void createGoalMission(int tileId) {

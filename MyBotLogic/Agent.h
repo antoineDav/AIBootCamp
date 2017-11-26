@@ -48,6 +48,10 @@ public:
 		pos = nPos;
 	}
 
+	bool hasReachedGoal() {
+		return pos == goalId;
+	}
+
 	void setPathValid(bool nPathValid) {
 		pathValid = nPathValid;
 	}

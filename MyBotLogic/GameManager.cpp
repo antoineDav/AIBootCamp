@@ -51,5 +51,5 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	{
 		_actionList.push_back(agent->play(_turnInfo));
 	}
-	MissionManager::get().newGoalFound = false;
+	//MissionManager::get().newGoalFound = false;
 }
