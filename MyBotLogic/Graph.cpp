@@ -100,29 +100,29 @@ void Graph::updateConnectorsWithType(const std::map<unsigned int, TileInfo>& til
 	for_each(tiles.begin(), tiles.end(), [&](const std::pair<unsigned int, TileInfo>& tile) {
 		Node& node = nodes[tile.second.tileID];
 		if (node.getType() == Tile::TileAttribute_Forbidden) {
-			vector<Connector*>* connectors{ node.getAvailableConnectors() };
+			vector<Connector*>* connectors{ node.getConnectors() };
 			for_each(connectors->begin(), connectors->end(), [&](Connector* connector) {
-				Connector* c1 = connector->getEndNode()->getAvailableConnector(connector->getBeginNode());
+				Connector* c1 = connector->getEndNode()->getConnector(connector->getBeginNode());
 				if (c1 != nullptr) {
 					c1->setIsToDestroy(true);
-					invalidConnectors.push_back(c1);
+					forbiddenConnector.push_back(c1);
 				}
 				connector->setIsToDestroy(true);
-				invalidConnectors.push_back(connector);
+				forbiddenConnector.push_back(connector);
 			});
 		}
 		else if ((node.getType() != Tile::TileAttribute_Forbidden) && (tile.second.tileType == Tile::TileAttribute_Forbidden)) {
 			node.setType(tiles.find(node.getId())->second.tileType);
 			//Pop old connectors for the neighbours of the node
-			vector<Connector*>* connectors{ node.getAvailableConnectors() };
+			vector<Connector*>* connectors{ node.getConnectors() };
 			for_each(connectors->begin(), connectors->end(), [](Connector* connector) {
-				connector->getEndNode()->popAvailableConnector(connector->getBeginNode());
+				connector->getEndNode()->popConnector(connector->getBeginNode());
 			});
 			//Clear connectors for the node
 			node.clearConnectors();
 		}
 		node.setType(tile.second.tileType);
-	});
+	});	
 }
 void Graph::updateConnectorsWithObjects(const std::map<unsigned int, ObjectInfo>& objects) noexcept {
 	for_each(objects.begin(), objects.end(), [&](const std::pair<unsigned int, ObjectInfo>& object) {
@@ -131,11 +131,11 @@ void Graph::updateConnectorsWithObjects(const std::map<unsigned int, ObjectInfo>
 			Connector* c1 = nodes[object.second.tileID].getAvailableConnector(object.second.position);
 			if ((c1 != nullptr) && (c1->getIsToDestroy() == false)) {
 				c1->setIsToDestroy(true);
-				invalidConnectors.push_back(c1);
+				wallConnector.push_back(c1);
 				Connector* c2 = c1->getEndNode()->getAvailableConnector(c1->getBeginNode());
 				if ((c2 != nullptr) && (c2->getIsToDestroy() == false)) {
 					c2->setIsToDestroy(true);
-					invalidConnectors.push_back(c2);
+					wallConnector.push_back(c2);
 				}
 			}
 		}
@@ -146,7 +146,7 @@ void Graph::update(const map<unsigned int, TileInfo>& tiles, const std::map<unsi
 	updateNodesType(tiles);
 	updateNodeObjects(objects);
 	updateConnectorsWithType(tiles);
-	updateConnectorsWithObjects(objects);
+	updateConnectorsWithObjects(objects); 
 	popInvalidConnectors();
 }
 
@@ -321,10 +321,14 @@ vector<int> Graph::getGoalPosition() const noexcept
 }
 
 void Graph::popInvalidConnectors() noexcept {
-	for_each(invalidConnectors.begin(), invalidConnectors.end(), [&](Connector* connector) {
+	for_each(forbiddenConnector.begin(), forbiddenConnector.end(), [&](Connector* connector) {
+		connector->getBeginNode()->popConnector(connector->getEndNode());
 		connector->getBeginNode()->popAvailableConnector(connector->getEndNode());
 	});
-	invalidConnectors.clear();
+	for_each(wallConnector.begin(), wallConnector.end(), [&](Connector* connector) {
+		connector->getBeginNode()->popAvailableConnector(connector->getEndNode());
+	});
+	forbiddenConnector.clear();
 }
 
 vector<const Connector*> Graph::getBestUnkown(int startId) {

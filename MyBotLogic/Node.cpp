@@ -15,9 +15,19 @@ Node::Node(unsigned int tileId, int colCount) noexcept
 
 void Node::addConnector(Connector* connector) noexcept {
 	//Add target obj in connector
-	connectors.push_back(connector);
 	if ((connector->getEndNodeC()->getType() != Tile::TileAttribute_Forbidden) && (getType() != Tile::TileAttribute_Forbidden)) {
+		connectors.push_back(connector);
 		availableConnectors.push_back(connector);
+	}
+}
+
+void Node::popConnector(Node * obj) noexcept {
+	//Pop target obj in connectors
+	auto it = find_if(connectors.begin(), connectors.end(), [&](Connector* connector) {
+		return (*connector->getEndNode() == *obj);
+	});
+	if (it != connectors.end()) {
+		connectors.erase(it);
 	}
 }
 

@@ -14,7 +14,8 @@ private:
 	int colCount;
 	vector<Node> nodes;
 	vector<Connector> connectors;
-	vector<Connector*> invalidConnectors;
+	vector<Connector*> forbiddenConnector;
+	vector<Connector*> wallConnector;
 	map<unsigned int, ObjectInfo> objects;
 
 private:
@@ -59,7 +60,7 @@ public:
 		return (abs(node1->getX() - node2->getX()) + abs(node1->getY() - node2->getY()));
 	}
 	const vector<Connector*>& getInvalidConnectors() const noexcept {
-		return invalidConnectors;
+		return forbiddenConnector;
 	}
 	void popInvalidConnectors() noexcept;
 

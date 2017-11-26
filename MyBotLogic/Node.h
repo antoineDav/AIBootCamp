@@ -60,7 +60,8 @@ public:
 	void setObject(int object) { _objectId = object; };
 	bool hasObject() { return _objectId != -1; }
 
-	void addConnector(Connector* connector) noexcept;
+	void addConnector(Connector* connector) noexcept; 
+	void popConnector(Node * obj) noexcept;
 	void popAvailableConnector(Node * obj) noexcept;
 	Connector* getConnector(Node * obj) noexcept;
 	Connector* getConnector(Tile::ETilePosition dir) noexcept;
