@@ -2,6 +2,7 @@
 #include "GameManager.h"
 
 #include "windows.h"
+#include "MissionManager.h"
 
 GameManager GameManager::instance;
 
@@ -36,6 +37,8 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 
 	sort(agents.begin(), agents.end(), AgentPtrComparison());
 
+	MissionManager::get().update();
+
 	for (Agent * agent : agents)
 	{
 		agent->makeDecisions();
@@ -48,5 +51,5 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	{
 		_actionList.push_back(agent->play(_turnInfo));
 	}
-	newGoalFound = false;
+	MissionManager::get().newGoalFound = false;
 }

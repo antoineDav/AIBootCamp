@@ -12,7 +12,8 @@ using namespace std;
 class Agent {
 private:
 	int id;
-	int goal;
+	int missionId;
+	int goalId;
 	int pos;
 	vector<const Connector *> path;
 	vector<int> forbidden;
@@ -20,16 +21,25 @@ private:
 
 	bool pathValid;
 	bool isSearching;
+	bool isHelping;
 
 public:
 	int getId() {
 		return id;
 	}
+	int getMissionId() {
+		return missionId;
+	}
+	void setMissionId(int nMission, int nGoal) {
+		missionId = nMission;
+		goalId = nGoal;
+
+	}
 	int getGoal() {
-		return goal;
+		return goalId;
 	}
 	void setGoal(int nGoal) {
-		goal = nGoal;
+		goalId = nGoal;
 	}
 	int getPos() {
 		return pos;
@@ -75,5 +85,11 @@ public:
 	}
 	bool getIsSearching() {
 		return isSearching;
+	}
+	void setHelping(bool b) {
+		isHelping = b;
+	}
+	bool getIsHelping() {
+		return isHelping;
 	}
 };
