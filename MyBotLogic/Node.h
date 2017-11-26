@@ -15,8 +15,8 @@ private:
 	Tile::ETileType type;
 	int _objectId;
 
-	std::vector<Connector*> connectors; //Only connectors without any forbidden type on both end are stored
-
+	std::vector<Connector*> connectors; 
+	std::vector<Connector*> availableConnectors; //Only connectors without any forbidden type on both end are stored
 
 public:
 	Node() = default;
@@ -43,8 +43,14 @@ public:
 	std::vector<Connector*>* getConnectors() noexcept {
 		return &connectors;
 	}
+
+	std::vector<Connector*>* getAvailableConnectors() noexcept {		
+		return &availableConnectors;
+	}
+
 	void clearConnectors() noexcept {
 		connectors.clear();
+		availableConnectors.clear();
 	}
 	bool isGoal() const noexcept {
 		return getType() == Tile::TileAttribute_Goal;
@@ -54,10 +60,13 @@ public:
 	void setObject(int object) { _objectId = object; };
 	bool hasObject() { return _objectId != -1; }
 
-	void addConnector(Connector* connector) noexcept;
+	void addConnector(Connector* connector) noexcept; 
 	void popConnector(Node * obj) noexcept;
+	void popAvailableConnector(Node * obj) noexcept;
 	Connector* getConnector(Node * obj) noexcept;
 	Connector* getConnector(Tile::ETilePosition dir) noexcept;
+	Connector* getAvailableConnector(Node * obj) noexcept;
+	Connector* getAvailableConnector(Tile::ETilePosition dir) noexcept;
 
 	friend bool operator==(const Node& l, const Node& r) noexcept {
 		return (l.getId() == r.getId());

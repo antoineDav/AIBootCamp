@@ -78,14 +78,14 @@ void Graph::updateNodeObjects(const std::map<unsigned int, ObjectInfo>& in_objec
 		}
 		else
 		{
-			Connector* connector = nodes[in_object.second.tileID].getConnector(in_object.second.position);
+			Connector* connector = nodes[in_object.second.tileID].getAvailableConnector(in_object.second.position);
 
 			if (connector && !connector->hasObject()) { //No connector if wall on outer edge of map
 
 				connector->setObject(in_object.second.objectID);
 
 				//Connector du Node a l'autre bout de la connexion
-				connector = connector->getEndNode()->getConnector(connector->getInvertDirection());
+				connector = connector->getEndNode()->getAvailableConnector(connector->getInvertDirection());
 				connector->setObject(in_object.second.objectID);
 
 				//Mark zone as dirty if new object potentially separates a zone in two
@@ -106,10 +106,10 @@ void Graph::updateConnectorsWithType(const std::map<unsigned int, TileInfo>& til
 				Connector* c1 = connector->getEndNode()->getConnector(connector->getBeginNode());
 				if (c1 != nullptr) {
 					c1->setIsToDestroy(true);
-					invalidConnectors.push_back(c1);
+					forbiddenConnector.push_back(c1);
 				}
 				connector->setIsToDestroy(true);
-				invalidConnectors.push_back(connector);
+				forbiddenConnector.push_back(connector);
 			});
 		}
 		else if ((node.getType() != Tile::TileAttribute_Forbidden) && (tile.second.tileType == Tile::TileAttribute_Forbidden)) {
@@ -123,20 +123,20 @@ void Graph::updateConnectorsWithType(const std::map<unsigned int, TileInfo>& til
 			node.clearConnectors();
 		}
 		node.setType(tile.second.tileType);
-	});
+	});	
 }
 void Graph::updateConnectorsWithObjects(const std::map<unsigned int, ObjectInfo>& objects) noexcept {
 	for_each(objects.begin(), objects.end(), [&](const std::pair<unsigned int, ObjectInfo>& object) {
 		const std::set<Object::EObjectType>& objectTypes = object.second.objectTypes;
 		if ((objectTypes.find(Object::ObjectType_Wall) != objectTypes.end()) || (objectTypes.find(Object::ObjectType_Window) != objectTypes.end())) {
-			Connector* c1 = nodes[object.second.tileID].getConnector(object.second.position);
+			Connector* c1 = nodes[object.second.tileID].getAvailableConnector(object.second.position);
 			if ((c1 != nullptr) && (c1->getIsToDestroy() == false)) {
 				c1->setIsToDestroy(true);
-				invalidConnectors.push_back(c1);
-				Connector* c2 = c1->getEndNode()->getConnector(c1->getBeginNode());
+				wallConnector.push_back(c1);
+				Connector* c2 = c1->getEndNode()->getAvailableConnector(c1->getBeginNode());
 				if ((c2 != nullptr) && (c2->getIsToDestroy() == false)) {
 					c2->setIsToDestroy(true);
-					invalidConnectors.push_back(c2);
+					wallConnector.push_back(c2);
 				}
 			}
 		}
@@ -147,7 +147,7 @@ void Graph::update(const map<unsigned int, TileInfo>& tiles, const std::map<unsi
 	updateNodesType(tiles);
 	updateNodeObjects(objects);
 	updateConnectorsWithType(tiles);
-	updateConnectorsWithObjects(objects);
+	updateConnectorsWithObjects(objects); 
 	popInvalidConnectors();
 }
 
@@ -221,7 +221,7 @@ vector<const Connector*> Graph::getPath(int startId, int goalId) {
 		}
 
 		//Otherwise get its outgoing connections
-		vector<Connector*>* neighbours = current->ptr->getConnectors();
+		vector<Connector*>* neighbours = current->ptr->getAvailableConnectors();
 
 		for (auto& neighbour : *neighbours) {
 			const Node* neighbourNode = neighbour->getEndNodeC();
@@ -322,10 +322,14 @@ vector<int> Graph::getGoalPosition() const noexcept
 }
 
 void Graph::popInvalidConnectors() noexcept {
-	for_each(invalidConnectors.begin(), invalidConnectors.end(), [&](Connector* connector) {
+	for_each(forbiddenConnector.begin(), forbiddenConnector.end(), [&](Connector* connector) {
 		connector->getBeginNode()->popConnector(connector->getEndNode());
+		connector->getBeginNode()->popAvailableConnector(connector->getEndNode());
 	});
-	invalidConnectors.clear();
+	for_each(wallConnector.begin(), wallConnector.end(), [&](Connector* connector) {
+		connector->getBeginNode()->popAvailableConnector(connector->getEndNode());
+	});
+	forbiddenConnector.clear();
 }
 
 vector<const Connector*> Graph::getBestUnkown(int startId) {
@@ -352,7 +356,7 @@ vector<const Connector*> Graph::getBestUnkown(int startId) {
 			break;
 		}
 
-		vector<Connector*>* connections = current->ptr->getConnectors();
+		vector<Connector*>* connections = current->ptr->getAvailableConnectors();
 		NodeItem* connectionRecord;
 		//Loop through each neighbours
 		for (auto& connection : *connections) {

@@ -3,6 +3,7 @@
 #include "State.h"
 #include "State/MoveState.h"
 #include "State/WaitState.h"
+#include "State/WaitCoopState.h"
 #include "BehaviourTree/GoalTree.h"
 
 class LogicManager {
@@ -14,6 +15,7 @@ private:
 	LogicManager& operator=(LogicManager&) = delete;
 
 	WaitState wait;
+	WaitCoopState waitCoop;
 	MoveState move;
 
 	GoalTree decisionTree;
@@ -24,6 +26,10 @@ public:
 	WaitState& getWaitState() {
 		return wait;
 	}
+	WaitCoopState& getWaitCoopState() {
+		return waitCoop;
+	}
+
 	MoveState& getMoveState() {
 		return move;
 	}

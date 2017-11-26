@@ -56,6 +56,8 @@ SET( AIBOT_HEADERS
 	
 	MyBotLogic/State/WaitState.h
 	MyBotLogic/State/MoveState.h
+	MyBotLogic/State/WaitCoopState.h
+
 	
 	MyBotLogic/BehaviourTree/Composite.h
 	MyBotLogic/BehaviourTree/Conditions.h
@@ -89,6 +91,7 @@ SET( AIBOT_SRC
 	
 	MyBotLogic/State/WaitState.cpp
 	MyBotLogic/State/MoveState.cpp
+	MyBotLogic/State/WaitCoopState.cpp
 	
 	MyBotLogic/BehaviourTree/Composite.cpp
 	MyBotLogic/BehaviourTree/Conditions.cpp
