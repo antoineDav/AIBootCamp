@@ -59,9 +59,18 @@ public:
 		const Node* node2{ &nodes[n2] };
 		return (abs(node1->getX() - node2->getX()) + abs(node1->getY() - node2->getY()));
 	}
-	const vector<Connector*>& getInvalidConnectors() const noexcept {
+
+	vector<Connector>& getConnectors() { return connectors; }
+	const vector<Connector*>& getForbiddenConnectors() const noexcept {
 		return forbiddenConnector;
 	}
+	const vector<Connector*>& getWallConnectors() const noexcept {
+		return wallConnector;
+	}
+	void addForbiddenConnector(Connector* co) {
+		forbiddenConnector.push_back(co);
+	}
+
 	void popInvalidConnectors() noexcept;
 
 	vector<const Connector*> getPath(int beginId, int goalId);

@@ -15,18 +15,36 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 	Graph graph = GameManager::get().getGraph();
 	bool found = false;
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
+		// Determine si un autre agent va tenter de se déplacer sur la même position que notre agent (CONFLIT) 
 		if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getNextPos() 
 			&& (graph.dist(agent->getPos(), agent->getGoal()) < graph.dist(ag->getPos(), ag->getGoal()) 
 				|| (graph.dist(agent->getPos(), agent->getGoal()) == graph.dist(ag->getPos(), ag->getGoal()) && agent->getId() > ag->getId()))) {
 			found = true;
 		}
 	});
+
 	if (found || agent->getPos() == agent->getGoal()) {
 		return &LogicManager::get().getWaitState();
 	}
+
+	// Détermine si l'agent se trouve devant une porte avec plaque de pression distante
+	const Connector* co = agent->getPath().back();
+	if (co->hasDoor())
+	{
+		std::set<Object::EObjectState> objectStates = graph.getObjects()[co->getObjects()].objectStates;
+		if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty()
+			&& objectStates.find(Object::ObjectState_Opened) == objectStates.end())
+		{
+			return &LogicManager::get().getWaitCoopState(); 
+		}
+
+		return nullptr;
+	}
+
 	else {
 		return nullptr;
 	}
+
 }
 
 void MoveState::onEnter(Agent * agent)
@@ -38,11 +56,9 @@ Action * MoveState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 	const Connector* co = agent->getPath().back();
 	if (co->hasDoor()) {
 		int objectInfoId = co->getObjects();
-		std::set<Object::EObjectType> objectTypeList = GameManager::get().getGraph().getObjects()[objectInfoId].objectTypes;
 		std::set<Object::EObjectState> objectStateList = GameManager::get().getGraph().getObjects()[objectInfoId].objectStates;
-		auto doorType = objectTypeList.find(Object::ObjectType_Door);
 		auto doorState = objectStateList.find(Object::ObjectState_Closed);
-		if (doorType != objectTypeList.end() && doorState != objectStateList.end()) {
+		if (doorState != objectStateList.end() && GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty()) {
 			return new Interact(agent->getId(), GameManager::get().getGraph().getObjects()[objectInfoId].objectID, Interact::Interaction_OpenDoor);
 		}
 	}
