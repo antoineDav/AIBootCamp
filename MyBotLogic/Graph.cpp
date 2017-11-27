@@ -420,3 +420,12 @@ vector<const Connector*> Graph::getBestUnkown(int startId) {
 	});
 	return path;
 }
+
+int Graph::getPressurePlatePosition(int ppId) {
+	if (objects.find(ppId) != objects.end()) {
+		return objects[ppId].tileID;
+	}
+	else {
+		return -1;
+	}
+}

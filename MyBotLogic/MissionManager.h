@@ -12,15 +12,18 @@ class MissionManager {
 public:
 
 	using MissionPtr = shared_ptr<Mission>;
+	using CoopMissionPtr = shared_ptr<CoopMission>;
 
 private:
 	static MissionManager instance;
 
 	map<unsigned int, MissionPtr> availableGoalMissions;
-	map<unsigned int, MissionPtr> availableCoopMissions;
+	map<unsigned int, CoopMissionPtr> availableCoopMissions;
 	
 	map<unsigned int, MissionPtr> inProgressGoalMissions;
-	map<unsigned int, MissionPtr> inProgressCoopMissions;
+	map<unsigned int, CoopMissionPtr> inProgressCoopMissions;
+
+	map<unsigned int, CoopMissionPtr> pendingCoopMissions;
 
 	int IdGenerator;
 	MissionManager() : IdGenerator{}, availableCoopMissions{}, availableGoalMissions{} {}
@@ -40,12 +43,13 @@ public:
 	const map<unsigned int, MissionPtr>& getAvailableGoalMissions() {
 		return availableGoalMissions;
 	}
-	const map<unsigned int, MissionPtr>& getAvailableCoopMissions() {
+	const map<unsigned int, CoopMissionPtr>& getAvailableCoopMissions() {
 		return availableCoopMissions;
 	}
 
-	void takeCoopMission(int missionId) {
+	void takeCoopMission(int missionId, int rId) {
 		inProgressCoopMissions[missionId] = availableCoopMissions[missionId];
+		inProgressCoopMissions[missionId]->receiverId = rId;
 		availableCoopMissions.erase(missionId);
 	}
 
@@ -70,12 +74,25 @@ public:
 
 	void returnCoopMission(int missionId) {
 		availableCoopMissions[missionId] = inProgressCoopMissions[missionId];
+		availableCoopMissions[missionId]->receiverId = -1;
 		inProgressCoopMissions.erase(missionId);
 	}
 
 	void createGoalMission(int tileId) {
 		int missionId = getNewId();
 		availableGoalMissions[missionId] = make_shared<Mission>(missionId, tileId);
+		newGoalFound = true;
+	}
+
+	void createCoopMission(int giverId, int ppId, int tileId) {
+		int missionId = getNewId();
+		availableCoopMissions[missionId] = make_shared<CoopMission>(missionId, giverId, ppId, tileId);
+		newGoalFound = true;
+	}
+
+	void createPendingCoopMission(int giverId, int ppId) {
+		int missionId = getNewId();
+		availableCoopMissions[missionId] = make_shared<CoopMission>(missionId, giverId, ppId);
 		newGoalFound = true;
 	}
 
@@ -96,5 +113,8 @@ public:
 
 	void update();
 
-	int getBestMission(map<unsigned int, MissionPtr>&, Agent*);
+	template <class MPtr>
+	int getBestMission(map<unsigned int, MPtr>&, Agent*);
+
+	void updatePendingMissions();
 };

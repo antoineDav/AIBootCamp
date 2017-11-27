@@ -14,7 +14,7 @@ WaitCoopState::WaitCoopState()
 State * WaitCoopState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {
 	// Vérifier si la mission de coopération a été accomplis
-	if (true/*Objectif n'apparait plus dans la liste*/)
+	if (false/*Objectif n'apparait plus dans la liste*/)
 	{
 		return &LogicManager::get().getMoveState();
 	}

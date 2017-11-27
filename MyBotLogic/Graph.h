@@ -77,6 +77,8 @@ public:
 	vector<const Connector*> getBestUnkown(int startId);
 
 	map<unsigned int, ObjectInfo> getObjects() { return objects; };
+
+	int getPressurePlatePosition(int ppId);
 };
 
 

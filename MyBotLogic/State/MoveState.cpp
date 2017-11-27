@@ -5,6 +5,7 @@
 #include "../LogicManager.h"
 
 #include "WaitState.h"
+#include "../MissionManager.h"
 
 MoveState::MoveState()
 {
@@ -35,6 +36,7 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 		if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty()
 			&& objectStates.find(Object::ObjectState_Opened) == objectStates.end())
 		{
+			MissionManager::get().requestMission(agent->getId(), co->getObjects());
 			return &LogicManager::get().getWaitCoopState(); 
 		}
 

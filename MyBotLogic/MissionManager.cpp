@@ -8,13 +8,32 @@ void MissionManager::missionDone(int npcId, int missionId) {
 	//change isHelping in agent
 }
 
-void MissionManager::requestMission(int npcId, int pressurePlateId) {
+void MissionManager::requestMission(int npcId, int doorId) {
+	Graph& graph = GameManager::get().getGraph();
+
+	auto pps = graph.getObjects()[doorId].connectedTo;
+
+	//for (auto& ppId : graph.getObjects()[doorId].connectedTo) {
+
+	for_each(pps.begin(), pps.end(), [&](int ppId) {
+
+		int ppTileId = graph.getPressurePlatePosition(ppId);
+
+		if (ppTileId != -1) {
+			createCoopMission(npcId, ppId, ppTileId);
+		}
+		else {
+			createPendingCoopMission(npcId, ppId);
+		}
+	});
 
 }
 
 void MissionManager::update() {
 
 	GameManager& gm = GameManager::get();
+
+	updatePendingMissions();
 
 	for (Agent* agent : gm.getAgents()) {
 
@@ -34,7 +53,7 @@ void MissionManager::update() {
 					}
 	
 					agent->setHelping(true);
-					takeCoopMission(newMissionId);
+					takeCoopMission(newMissionId, agent->getId());
 				}
 
 			}
@@ -52,28 +71,6 @@ void MissionManager::update() {
 						takeGoalMission(newMissionId);
 					}
 				}
-
-
-
-/*
-
-				if (currentMissionId != -1) {
-
-					if (newGoalFound) {
-						returnGoalMission(currentMissionId);
-					}
-					else {
-
-					}
-					
-				}
-				
-				int newMissionId = getBestMission(availableGoalMissions, agent);
-
-				if (newMissionId != -1) { //If coop mission assigned
-					agent->setHelping(false);
-					takeGoalMission(newMissionId);
-				}*/
 			}
 
 		}
@@ -82,7 +79,28 @@ void MissionManager::update() {
 	newGoalFound = false;
 }
 
-int MissionManager::getBestMission(map<unsigned int, MissionPtr>& missions, Agent* agent) {
+void MissionManager::updatePendingMissions() {
+
+	Graph& graph = GameManager::get().getGraph();
+
+	for (auto& mission : pendingCoopMissions) {
+
+		int ppId = mission.second->pressurePlateId;
+
+		int ppTileId = graph.getPressurePlatePosition(ppId);
+
+		//If pressure plate location was discovered, update and move to available missions
+		if (ppTileId != -1) {
+			mission.second->tileId = ppTileId;
+			availableCoopMissions[mission.first] = mission.second;
+			pendingCoopMissions.erase(mission.first);
+		}
+	}
+
+}
+
+template <class MPtr>
+int MissionManager::getBestMission(map<unsigned int, MPtr>& missions, Agent* agent) {
 	GameManager& gm = GameManager::get();
 
 	vector<int>& forbiddens = agent->getForbiddens();
