@@ -3,6 +3,7 @@
 #include "State/WaitState.h"
 #include "LogicManager.h"
 #include "GameManager.h"
+#include "Graph.h"
 
 Agent::Agent(int agentId)
 {
@@ -44,4 +45,7 @@ void Agent::checkPath()
 	}
 }
 
+void Agent::setVisited() {
+	GameManager::get().getGraph().setVisitedNode(this->pos);
+}
 

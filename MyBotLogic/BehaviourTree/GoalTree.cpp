@@ -7,15 +7,17 @@ Task::Result GoalTree::execute(Agent * ag)
 
 GoalTree::GoalTree()
 {
-	Selector* objSelector = new Selector();
-	Discover* discover = new Discover();
+	Selector* objSelector = new Selector(); 
+	DiscoverNear* discoverNear = new DiscoverNear();
+	DiscoverFar* discoverFar = new DiscoverFar();
 	IsGoalReached* goalReached = new IsGoalReached();
 	Sequence* nObjSequence = new Sequence();
 	IsPathValid* pathValid = new IsPathValid();
 	IsNewPathNeeded* newPathNeeded = new IsNewPathNeeded();
 	FindObjective* findObj = new FindObjective();
 	entry.addChild(objSelector);
-	entry.addChild(discover);
+	entry.addChild(discoverNear);
+	entry.addChild(discoverFar);
 	objSelector->addChild(goalReached);
 	objSelector->addChild(nObjSequence);
 	objSelector->addChild(pathValid);

@@ -3,6 +3,8 @@
 #include "Utility.h"
 #include "GameManager.h"
 
+#include "Debug.h"
+
 int Graph::getPositionId(int x, int y) const noexcept {
 	if ((x >= 0) && (x < colCount*2) && (y >= 0) && (y < rowCount))
 		return x / 2 + colCount * y;
@@ -63,6 +65,33 @@ void Graph::updateNodesType(const std::map<unsigned int, TileInfo>& tiles) noexc
 			GameManager::get().returnObjective(tile.second.tileID);
 		}
 		nodes[tile.second.tileID].setType(tile.second.tileType);
+#ifdef DEBUGBOT_GRAPH
+		file << "Node id : " << tile.second.tileID << " - "  << endl;
+		const map<Tile::ETileType, const char*> tileTypeString{
+			{ Tile::ETileType::TileAttribute_Default , "Default" },
+			{ Tile::ETileType::TileAttribute_Goal, "Goal" },
+			{ Tile::ETileType::TileAttribute_Forbidden, "Forbidden" },
+			{ Tile::ETileType::TileAttribute_Omniscient, "Omniscient" },
+			{ Tile::ETileType::TileAttribute_Unknown, "Unknown" }
+		};
+		const map<Tile::ETilePosition, const char*> tilePositionString{
+			{ Tile::ETilePosition::NE , "NE" },
+			{ Tile::ETilePosition::E, "E" },
+			{ Tile::ETilePosition::SE, "S" },
+			{ Tile::ETilePosition::SW, "SW" },
+			{ Tile::ETilePosition::W, "W" },
+			{ Tile::ETilePosition::NW, "NW" },
+			{ Tile::ETilePosition::CENTER, "CENTER" }
+		};
+		file << "\tType : " << tileTypeString.find(tile.second.tileType)->second << endl;
+		std::vector<Connector*>* connectors = GameManager::get().getGraph().getNode(tile.first).getAvailableConnectors();
+		for (auto connector : *connectors){
+			file << "\tConnector : " << connector->getBeginNode()->getId() << " -> " << connector->getEndNode()->getId() << endl;
+			file << "\t\t\tDirection : " << tilePositionString.find(connector->getDirection())->second << endl;
+			file << "\t\t\tObject Id : " << connector->getObjects() << endl;
+			file << "\t\t\tIs Destroy : " << connector->getIsToDestroy() << endl;
+		}
+#endif // DEBUGBOT_GRAPH
 	});
 }
 
@@ -331,7 +360,7 @@ void Graph::popInvalidConnectors() noexcept {
 	forbiddenConnector.clear();
 }
 
-vector<const Connector*> Graph::getBestUnkown(int startId) {
+vector<const Connector*> Graph::getFarUnkown(int startId) {
 	Node* start{ &getNode(startId) };
 
 	NodeItem *startRecord = new NodeItem{};
@@ -417,5 +446,52 @@ vector<const Connector*> Graph::getBestUnkown(int startId) {
 		ni->previous = nullptr;
 		delete(ni);
 	});
+	return path;
+}
+
+vector<const Connector*> Graph::getNearUnkown(int startId) {
+	vector<const Connector*> path = {};
+	Node* start{ &getNode(startId) };
+	int potential = 0;
+	int previousPotential = 0;
+	unsigned int plateId = -1;
+	for (auto neighboursConnector : *start->getAvailableConnectors()) {
+		Node* neighbor = neighboursConnector->getEndNode();
+		if (neighbor->getVisited() == false) {
+			if(neighbor->getObjects() >= 0){
+				plateId = neighbor->getObjects();
+			}
+			for (auto neighborConnector : *neighbor->getConnectors()) {
+				if (!neighborConnector->hasObject()) {
+					potential += 2;
+				}
+				else {
+					ObjectInfo obj = Graph::getObjects()[neighborConnector->getObjects()];
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(),Object::ObjectType_Window)!= obj.objectTypes.end()) {
+						potential += 6;
+					}
+					else if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Door)!= obj.objectTypes.end() ){
+						if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end() && obj.connectedTo.empty()) {
+							potential += 3;
+						}
+						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end() && find(obj.connectedTo.begin(), obj.connectedTo.end(),plateId)!= obj.connectedTo.end()) {
+							potential += 10;
+						}
+						else {
+							++potential;
+						}
+					}
+				}
+			}
+			if (potential > previousPotential){
+				path.clear();
+				path.push_back(neighboursConnector);
+				previousPotential = potential;
+			}
+			potential = 0;
+			plateId = -1;
+		}
+	}
+	//return one connector
 	return path;
 }

@@ -72,9 +72,10 @@ public:
 	}
 
 	void popInvalidConnectors() noexcept;
-
-	vector<const Connector*> getPath(int beginId, int goalId);
-	vector<const Connector*> getBestUnkown(int startId);
+	void setVisitedNode(int id) { nodes[id].setVisited(); };
+	vector<const Connector*> getPath(int beginId, int goalId); 
+	vector<const Connector*> getNearUnkown(int startId);
+	vector<const Connector*> getFarUnkown(int startId);
 
 	map<unsigned int, ObjectInfo> getObjects() { return objects; };
 };
