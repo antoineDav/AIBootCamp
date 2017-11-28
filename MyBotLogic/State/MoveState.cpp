@@ -6,13 +6,14 @@
 
 #include "WaitState.h"
 #include "../MissionManager.h"
+//#include <chrono>
 
 MoveState::MoveState()
 {
 }
 
 State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
-{
+{	
 	Graph graph = GameManager::get().getGraph();
 	bool found = false;
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
@@ -24,14 +25,19 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 		}
 	});
 
-	if (found || agent->getPos() == agent->getGoal()) {
+	if (found || agent->getPos() == agent->getGoal() || agent->getHasToWait()) {
+		for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
+			if (ag->getNextPos() == agent->getPos()/* && (ag->getCurrState() == &LogicManager::get().getWaitState() || ag->getPath().empty())*/)
+			{
+				ag->forceToWait(agent);
+			}
+		});
 		return &LogicManager::get().getWaitState();
 	}
 
 	// Détermine si l'agent se trouve devant une porte avec plaque de pression distante
 	const Connector* co = agent->getPath().back();
-	if (co->hasDoor())
-	{
+	if (co->hasDoor()) {
 		std::set<Object::EObjectState> objectStates = graph.getObjects()[co->getObjects()].objectStates;
 		if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty()
 			&& objectStates.find(Object::ObjectState_Opened) == objectStates.end())
@@ -39,14 +45,11 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 			MissionManager::get().requestMission(agent->getId(), co->getObjects());
 			return &LogicManager::get().getWaitCoopState(); 
 		}
-
 		return nullptr;
 	}
-
 	else {
 		return nullptr;
 	}
-
 }
 
 void MoveState::onEnter(Agent * agent)
@@ -64,7 +67,6 @@ Action * MoveState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 			return new Interact(agent->getId(), GameManager::get().getGraph().getObjects()[objectInfoId].objectID, Interact::Interaction_OpenDoor);
 		}
 	}
-
 	agent->setPos(agent->getNextPos());
 	Action * act = new Move(agent->getId(), agent->getPath().back()->getDirection());
 	agent->getPath().pop_back();

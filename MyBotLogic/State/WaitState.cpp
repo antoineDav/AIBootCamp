@@ -14,12 +14,19 @@ State * WaitState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {
 	Graph graph = GameManager::get().getGraph();
 	bool found = false;
+
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
 		if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getNextPos() && (graph.dist(agent->getPos(), agent->getGoal()) < graph.dist(ag->getPos(), ag->getGoal()) || (graph.dist(agent->getPos(), agent->getGoal()) == graph.dist(ag->getPos(), ag->getGoal()) && agent->getId() > ag->getId()))) {
 			found = true;
 		}
 	});
-	if (found || agent->getPos() == agent->getGoal()) {
+	if (found || agent->getPos() == agent->getGoal() || agent->getHasToWait()) {
+		for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
+			if (ag->getNextPos() == agent->getPos())
+			{
+				ag->forceToWait(agent);
+			}
+		});
 		return nullptr;
 	}
 	else {

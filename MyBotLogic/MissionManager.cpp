@@ -6,6 +6,12 @@ MissionManager MissionManager::instance;
 
 void MissionManager::missionDone(int npcId, int missionId) {
 	//change isHelping in agent
+	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
+		if (ag->getId() == npcId) {
+			ag->setHelping(false);
+		}
+	});
+	inProgressCoopMissions.erase(missionId);
 }
 
 void MissionManager::requestMission(int npcId, int doorId) {
@@ -75,7 +81,6 @@ void MissionManager::update() {
 
 		}
 	}
-
 	newGoalFound = false;
 }
 
@@ -96,7 +101,6 @@ void MissionManager::updatePendingMissions() {
 			pendingCoopMissions.erase(mission.first);
 		}
 	}
-
 }
 
 template <class MPtr>

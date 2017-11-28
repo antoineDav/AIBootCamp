@@ -32,6 +32,7 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	graph.update(_turnInfo.tiles,_turnInfo.objects);
 	for (Agent * agent : agents) {
 		agent->checkPath();
+		agent->setHasToWait(false);
 	}
 	graph.popInvalidConnectors();
 

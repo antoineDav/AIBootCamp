@@ -35,7 +35,7 @@ private:
 
 public:
 
-	bool newGoalFound;
+	bool newGoalFound = false;
 	static MissionManager& get() {
 		return instance;
 	}

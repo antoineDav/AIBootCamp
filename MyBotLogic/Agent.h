@@ -19,9 +19,10 @@ private:
 	vector<int> forbidden;
 	State * currState;
 
-	bool pathValid;
-	bool isSearching;
-	bool isHelping;
+	bool pathValid = true;
+	bool isSearching = false;
+	bool isHelping = false;
+	bool hasToWait = false;
 
 public:
 	int getId() {
@@ -96,4 +97,9 @@ public:
 	bool getIsHelping() {
 		return isHelping;
 	}
+	State* getCurrState() { return currState; }
+	void setCurrState(State * newState) { currState = newState; }
+	bool getHasToWait() { return hasToWait; }
+	void setHasToWait(bool newBool) { hasToWait = newBool; }
+	void forceToWait(Agent * source);
 };
