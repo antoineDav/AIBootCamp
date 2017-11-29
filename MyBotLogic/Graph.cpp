@@ -520,6 +520,10 @@ vector<const Connector *> Graph::wallGroping(int startId) {
 			ObjectInfo obj = Graph::getObjects()[neighboursConnector->getObjects()];
 			if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
 				neighboursConnector->setIsGrope();
+				vector<Connector>::iterator it = find_if(this->connectors.begin(), this->connectors.end(), [&neighboursConnector](Connector connector) {
+					return (connector.getEndNode() == neighboursConnector->getBeginNode() && connector.getBeginNode() == neighboursConnector->getEndNode());
+				});
+				it->setIsGrope();
 				path.push_back(neighboursConnector);
 				return path;
 			}
@@ -536,7 +540,7 @@ vector<const Connector *> Graph::wallGroping(int startId) {
 						path.push_back(neighboursConnector);
 						return path;
 					}
-					if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Door) != obj.objectTypes.end()) {
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Door) != obj.objectTypes.end() && find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end()) {
 						path.push_back(neighboursConnector);
 						return path;
 					}

@@ -14,7 +14,7 @@ MoveState::MoveState()
 
 State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {	
-	Graph graph = GameManager::get().getGraph();
+	Graph& graph = GameManager::get().getGraph();
 	bool found = false;
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
 		// Determine si un autre agent va tenter de se déplacer sur la même position que notre agent (CONFLIT) 

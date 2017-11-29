@@ -15,7 +15,7 @@ private:
 	Tile::ETileType type;
 	int _objectId;
 
-	bool visited;
+	unsigned int visited = 0;
 
 	std::vector<Connector*> connectors; 
 	std::vector<Connector*> availableConnectors; //Only connectors without any forbidden type on both end are stored
@@ -37,7 +37,7 @@ public:
 
 	bool getVisited() { return visited; };
 
-	void setVisited() { visited = true; };
+	void setVisited() { ++visited; };
 
 	Tile::ETileType getType() const noexcept {
 		return type;

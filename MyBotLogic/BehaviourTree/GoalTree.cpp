@@ -18,8 +18,8 @@ GoalTree::GoalTree()
 	//FindObjective* findObj = new FindObjective();
 	entry.addChild(objSelector);
 	entry.addChild(discoverNear);
-	entry.addChild(discoverDoor);
 	entry.addChild(discoverFar);
+	entry.addChild(discoverDoor);
 	objSelector->addChild(goalReached);
 	//objSelector->addChild(nObjSequence);
 	objSelector->addChild(pathValid);

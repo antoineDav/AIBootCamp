@@ -38,7 +38,7 @@ Action * WaitCoopState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 
 void WaitCoopState::onExit(Agent * agent)
 {
-	Graph graphe = GameManager::get().getGraph();
+	Graph& graphe = GameManager::get().getGraph();
 	const Connector* co = agent->getPath().back();
 
 	// In case the agent is alone and can't cooperate
