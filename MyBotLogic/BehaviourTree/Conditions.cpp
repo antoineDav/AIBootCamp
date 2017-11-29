@@ -26,10 +26,10 @@ Task::Result IsPathValid::execute(Agent * ag)
 			MissionManager& mm = MissionManager::get();
 			
 			if (ag->getIsHelping()) {
-				mm.returnCoopMission(ag->getMissionId());
+				mm.returnMission(ag->getMissionId());
 			}
 			else {
-				mm.returnGoalMission(ag->getMissionId());
+				mm.returnMission(ag->getMissionId());
 			}
 
 			ag->setMissionId(-1, -1);
