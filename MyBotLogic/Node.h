@@ -67,6 +67,9 @@ public:
 	bool hasObject() { return _objectId != -1; }
 
 	void addConnector(Connector* connector) noexcept; 
+	void addAvailableConnector(Connector* connector) {
+		availableConnectors.push_back(connector);
+	}
 	void popConnector(Node * obj) noexcept;
 	void popAvailableConnector(Node * obj) noexcept;
 	Connector* getConnector(Node * obj) noexcept;

@@ -8,3 +8,7 @@ class DiscoverNear : public Task {
 class DiscoverFar : public Task {
 	virtual Result execute(Agent *) override;
 };
+
+class DiscoverDoor : public Task {
+	virtual Result execute(Agent *) override;
+};

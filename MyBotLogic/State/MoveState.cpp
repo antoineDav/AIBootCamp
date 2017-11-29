@@ -62,7 +62,11 @@ Action * MoveState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 			return new Interact(agent->getId(), GameManager::get().getGraph().getObjects()[objectInfoId].objectID, Interact::Interaction_OpenDoor);
 		}
 	}
-
+	ObjectInfo obj = GameManager::get().getGraph().getObjects()[co->getObjects()];
+	if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
+		GameManager::get().getGraph().setWallGrope(const_cast<Connector*>(co));
+		return new Interact(agent->getId(), obj.objectID, Interact::Interaction_SearchHiddenDoor);
+	}
 	agent->setPos(agent->getNextPos());
 	Action * act = new Move(agent->getId(), agent->getPath().back()->getDirection());
 	agent->getPath().pop_back();

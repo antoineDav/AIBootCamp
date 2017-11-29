@@ -168,7 +168,19 @@ void Graph::updateConnectorsWithObjects(const std::map<unsigned int, ObjectInfo>
 				}
 			}
 		}
+		for (Connector* wG : this->wallGrope)
+		{
+			if (wG->getObjects() == object.second.objectID && objectTypes.find(Object::ObjectType_Door) != objectTypes.end())
+			{
+				wG->getBeginNode()->popConnector(wG->getEndNode());
+				wG->setIsToDestroy(false);
+				wG->getBeginNode()->addAvailableConnector(wG);
+				continue;
+			}
+		}
 	});
+	wallGrope.clear();
+	
 }
 
 void Graph::update(const map<unsigned int, TileInfo>& tiles, const std::map<unsigned int, ObjectInfo>& objects) noexcept {
@@ -477,6 +489,9 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end() && find(obj.connectedTo.begin(), obj.connectedTo.end(),plateId)!= obj.connectedTo.end()) {
 							potential += 10;
 						}
+						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Opened) != obj.objectStates.end() && neighborConnector->getBeginNode()->getVisited() == false) {
+							potential += 15;
+						}
 						else {
 							++potential;
 						}
@@ -493,5 +508,40 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 		}
 	}
 	//return one connector
+	return path;
+}
+
+vector<const Connector *> Graph::wallGroping(int startId) {
+	vector<const Connector*> path = {};
+	Node* start{ &getNode(startId) };
+	for (auto neighboursConnector : *start->getConnectors()) {
+		if (neighboursConnector->getObjects() != -1 && neighboursConnector->getIsGrope() == false) {
+			ObjectInfo obj = Graph::getObjects()[neighboursConnector->getObjects()];
+			if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
+				neighboursConnector->setIsGrope();
+				path.push_back(neighboursConnector);
+				return path;
+			}
+		}
+	}
+	if (path.empty())
+	{
+		for (auto neighboursConnector : *start->getAvailableConnectors()) {
+			Node* neighbor{ neighboursConnector->getEndNode() };
+			for (auto neighborConnector : *neighbor->getConnectors()) {
+				if (neighborConnector->getObjects() != -1 && neighborConnector->getIsGrope() == false) {
+					ObjectInfo obj = Graph::getObjects()[neighborConnector->getObjects()];
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
+						path.push_back(neighboursConnector);
+						return path;
+					}
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Door) != obj.objectTypes.end()) {
+						path.push_back(neighboursConnector);
+						return path;
+					}
+				}
+			}
+		}
+	}
 	return path;
 }
