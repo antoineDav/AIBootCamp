@@ -16,8 +16,9 @@ State * WaitCoopState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 	
 	const Connector* co = agent->getPath().back();
 	std::set<Object::EObjectState> objectStates = GameManager::get().getGraph().getObjects()[co->getObjects()].objectStates;
+	std::set<Object::EObjectType> objectTypes = GameManager::get().getGraph().getObjects()[co->getObjects()].objectTypes;
 	// Vérifier si la mission de coopération a été accomplis ou si le path a changé
-	if (objectStates.find(Object::ObjectState_Opened) != objectStates.end())
+	if (objectStates.find(Object::ObjectState_Opened) != objectStates.end() || objectTypes.find(Object::ObjectType_Door) == objectTypes.end())
 	{
 		return &LogicManager::get().getMoveState();
 	}

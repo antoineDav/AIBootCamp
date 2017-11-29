@@ -29,7 +29,7 @@ void MissionManager::update() {
 	//Update pending missions if possible
 	for (auto& mission : missions) {
 
-		if (mission->mStatus = Mission::PENDING) {
+		if (mission->mStatus == Mission::PENDING) {
 			updatePendingMission(mission);
 		}
 	}
@@ -41,7 +41,7 @@ void MissionManager::update() {
 	//Try to assign available missions in order of priority
 	for (auto& mission : missions) {
 
-		if (mission->mStatus = Mission::AVAILABLE) {
+		if (mission->mStatus == Mission::AVAILABLE) {
 			int agentId = getBestAgent(mission);
 		}
 	
