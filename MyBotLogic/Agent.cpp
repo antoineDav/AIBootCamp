@@ -8,8 +8,11 @@
 Agent::Agent(int agentId)
 {
 	id = agentId;
+	missionId = -1;
+	goalId = -1;
 	currState = &LogicManager::get().getMoveState();
 	isSearching = true;
+	isHelping = false;
 }
 
 void Agent::makeDecisions()
@@ -45,7 +48,20 @@ void Agent::checkPath()
 	}
 }
 
+
 void Agent::setVisited() {
 	GameManager::get().getGraph().setVisitedNode(this->pos);
 }
+
+void Agent::forceToWait(Agent * source)
+{
+	setCurrState(&LogicManager::get().getWaitState());
+	setHasToWait(true);
+	for (auto ag : GameManager::get().getAgents()) {
+		if (ag->getId() != id && ag->getNextPos() == getPos()) {
+			ag->forceToWait(this);
+		}
+	}
+}
+
 

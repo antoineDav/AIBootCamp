@@ -92,6 +92,8 @@ public:
 	vector<const Connector *> wallGroping(int startId);
 
 	map<unsigned int, ObjectInfo> getObjects() { return objects; };
+
+	int getPressurePlatePosition(int ppId);
 };
 
 

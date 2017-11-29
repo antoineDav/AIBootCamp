@@ -5,28 +5,30 @@
 #include "../LogicManager.h"
 #include <algorithm>
 #include "MoveState.h"
+#include "../MissionManager.h"
 
 WaitCoopState::WaitCoopState()
 {
-	wclog.Init("C:\\Users\\dava3202\\Documents\\Cours\\IA\\CD_AIBootCamp\\AIBootCamp\\MyBotLogic", "wclog.txt");
 }
 
 State * WaitCoopState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {
-	// Vérifier si la mission de coopération a été accomplis
-	if (true/*Objectif n'apparait plus dans la liste*/)
+	
+	const Connector* co = agent->getPath().back();
+	std::set<Object::EObjectState> objectStates = GameManager::get().getGraph().getObjects()[co->getObjects()].objectStates;
+	// Vérifier si la mission de coopération a été accomplis ou si le path a changé
+	if (objectStates.find(Object::ObjectState_Opened) != objectStates.end())
 	{
 		return &LogicManager::get().getMoveState();
 	}
+	
+	// Vérifier si la coopération est impossible
+
 	return nullptr;
 }
 
 void WaitCoopState::onEnter(Agent * agent)
 {
-	// Envoyer requete de coopération
-	wclog.Log("		WaitCoopState onEnter");
-	wclog.Log("			Requette coop");
-
 }
 
 Action * WaitCoopState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
@@ -36,16 +38,20 @@ Action * WaitCoopState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 
 void WaitCoopState::onExit(Agent * agent)
 {
-	// In case the agent is alone and can't cooperate
 	Graph graphe = GameManager::get().getGraph();
 	const Connector* co = agent->getPath().back();
+
+	// In case the agent is alone and can't cooperate
 	std::set<Object::EObjectState> objectStates = graphe.getObjects()[co->getObjects()].objectStates;
 	if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty()
 		&& objectStates.find(Object::ObjectState_Opened) == objectStates.end())
 	{
 		// Invalid the connector
-/*		agent->setPathValid(false);*/
+		/*agent->setPathValid(false);*/
 		Connector* co2 = const_cast<Connector* >(co);
 		graphe.addForbiddenConnector(co2);
+	}
+	else {
+		MissionManager::get().missionDone(agent->getId(), agent->getMissionId());
 	}
 }

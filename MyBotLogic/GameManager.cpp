@@ -2,6 +2,7 @@
 #include "GameManager.h"
 
 #include "windows.h"
+#include "MissionManager.h"
 
 #include "Debug.h"
 
@@ -34,6 +35,7 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	for (Agent * agent : agents) {
 		agent->setVisited();
 		agent->checkPath();
+		agent->setHasToWait(false);
 	}
 	graph.popInvalidConnectors();
 
@@ -42,6 +44,8 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 #endif // DEBUGBOT_GRAPH
 
 	sort(agents.begin(), agents.end(), AgentPtrComparison());
+
+	MissionManager::get().update();
 
 	for (Agent * agent : agents)
 	{
@@ -55,5 +59,5 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	{
 		_actionList.push_back(agent->play(_turnInfo));
 	}
-	newGoalFound = false;
+	//MissionManager::get().newGoalFound = false;
 }

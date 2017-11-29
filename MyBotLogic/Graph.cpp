@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "Utility.h"
 #include "GameManager.h"
+#include "MissionManager.h"
 
 #include "Debug.h"
 
@@ -62,7 +63,7 @@ void Graph::init(int _rowCount, int _colCount, const std::map<unsigned int, Tile
 void Graph::updateNodesType(const std::map<unsigned int, TileInfo>& tiles) noexcept {
 	for_each(tiles.begin(), tiles.end(), [&](const std::pair<unsigned int, TileInfo>& tile) {
 		if (tile.second.tileType == Tile::TileAttribute_Goal && nodes[tile.second.tileID].getType() != Tile::TileAttribute_Goal) {
-			GameManager::get().returnObjective(tile.second.tileID);
+			MissionManager::get().createGoalMission(tile.second.tileID);
 		}
 		nodes[tile.second.tileID].setType(tile.second.tileType);
 #ifdef DEBUGBOT_GRAPH
@@ -544,4 +545,13 @@ vector<const Connector *> Graph::wallGroping(int startId) {
 		}
 	}
 	return path;
+}
+
+int Graph::getPressurePlatePosition(int ppId) {
+	if (objects.find(ppId) != objects.end()) {
+		return objects[ppId].tileID;
+	}
+	else {
+		return -1;
+	}
 }

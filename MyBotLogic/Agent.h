@@ -12,30 +12,45 @@ using namespace std;
 class Agent {
 private:
 	int id;
-	int goal;
+	int missionId;
+	int goalId;
 	int pos;
 	vector<const Connector *> path;
 	vector<int> forbidden;
 	State * currState;
 
-	bool pathValid;
-	bool isSearching;
+	bool pathValid = true;
+	bool isSearching = false;
+	bool isHelping = false;
+	bool hasToWait = false;
 
 public:
 	int getId() {
 		return id;
 	}
+	int getMissionId() {
+		return missionId;
+	}
+	void setMissionId(int nMission, int nGoal) {
+		missionId = nMission;
+		goalId = nGoal;
+
+	}
 	int getGoal() {
-		return goal;
+		return goalId;
 	}
 	void setGoal(int nGoal) {
-		goal = nGoal;
+		goalId = nGoal;
 	}
 	int getPos() {
 		return pos;
 	}
 	void setPos(int nPos) {
 		pos = nPos;
+	}
+
+	bool hasReachedGoal() {
+		return pos == goalId;
 	}
 
 	void setPathValid(bool nPathValid) {
@@ -79,4 +94,15 @@ public:
 	bool getIsSearching() {
 		return isSearching;
 	}
+	void setHelping(bool b) {
+		isHelping = b;
+	}
+	bool getIsHelping() {
+		return isHelping;
+	}
+	State* getCurrState() { return currState; }
+	void setCurrState(State * newState) { currState = newState; }
+	bool getHasToWait() { return hasToWait; }
+	void setHasToWait(bool newBool) { hasToWait = newBool; }
+	void forceToWait(Agent * source);
 };
