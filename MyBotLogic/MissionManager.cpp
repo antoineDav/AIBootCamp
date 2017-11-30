@@ -228,7 +228,7 @@ bool MissionManager::assignMission(MissionPtr newMission, MissionPtr currentMiss
 		return false;
 	}
 	else {
-		//Return current lower priority mission if any
+		//Return current mission if any
 		if (currentMission != nullptr) {
 			returnMission(currentMission->missionId);
 		}

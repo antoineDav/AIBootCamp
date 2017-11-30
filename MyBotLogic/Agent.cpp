@@ -46,8 +46,7 @@ void Agent::checkPath()
 	}
 }
 
-void Agent::forceToWait(Agent * source)
-{
+void Agent::forceToWait(Agent * source) {
 	setCurrState(&LogicManager::get().getWaitState());
 	setHasToWait(true);
 	for (auto ag : GameManager::get().getAgents()) {
@@ -55,6 +54,8 @@ void Agent::forceToWait(Agent * source)
 			ag->forceToWait(this);
 		}
 	}
+}
+
 void Agent::setVisited() {
 	GameManager::get().getGraph().setVisitedNode(this->pos);
 }
