@@ -56,6 +56,13 @@ public:
 		return agents;
 	}
 
+	Agent* getAgentById(int agentId) noexcept {
+		auto agentIt = find_if(agents.begin(), agents.end(), [&agentId](Agent* agent) {
+			return agent->getId() == agentId; 
+		});
+		return *agentIt;
+	}
+
 	Graph& getGraph() {
 		return graph;
 	}

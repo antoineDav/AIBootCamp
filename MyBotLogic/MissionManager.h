@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <algorithm>
+#include "Logger.h"
 
 using namespace std;
 
@@ -13,23 +14,19 @@ class MissionManager {
 public:
 
 	using MissionPtr = shared_ptr<Mission>;
-	//using CoopMissionPtr = shared_ptr<CoopMission>;
 
 private:
+	Logger mLog;
+	int tour;
+
 	static MissionManager instance;
 
-	vector<MissionPtr> missions; //FONCTION TRI PAR PRIORITÉ (haute à basse)
-
-	//map<unsigned int, MissionPtr> availableGoalMissions;
-	//map<unsigned int, CoopMissionPtr> availableCoopMissions;
-	//
-	//map<unsigned int, MissionPtr> inProgressGoalMissions;
-	//map<unsigned int, CoopMissionPtr> inProgressCoopMissions;
-
-	//map<unsigned int, CoopMissionPtr> pendingCoopMissions;
+	vector<MissionPtr> missions; 
 
 	int IdGenerator;
-	MissionManager() : IdGenerator{}, missions{}/*, availableCoopMissions{}, availableGoalMissions{}*/ {}
+	MissionManager() : IdGenerator{}, missions{}, tour{} {
+		mLog.Init("\\INF781\\Labos\\AIBootCamp_3\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
+	}
 	MissionManager(MissionManager&) = delete;
 	MissionManager& operator=(MissionManager&) = delete;
 	~MissionManager() = default;
@@ -41,6 +38,7 @@ private:
 		bool operator() (MissionPtr _lmission, MissionPtr _rmission) const {
 			return (_lmission->priorityLvl > _rmission->priorityLvl);
 		}
+
 	};
 
 public:
@@ -50,14 +48,7 @@ public:
 		return instance;
 	}
 
-	//const map<unsigned int, MissionPtr>& getAvailableGoalMissions() {
-	//	return availableGoalMissions;
-	//}
-	//const map<unsigned int, CoopMissionPtr>& getAvailableCoopMissions() {
-	//	return availableCoopMissions;
-	//}
-
-	const vector<MissionPtr> getMissions() {
+	const vector<MissionPtr>& getMissions() {
 		return missions;
 	}
 
@@ -78,10 +69,10 @@ public:
 		
 	}
 
-	MissionPtr getMissionGivenTo (int npcId) {
+	MissionPtr getCurrentlyAssignedMission (int npcId) {
 		auto ptr = find_if(missions.begin(), missions.end(),
 			[&npcId](MissionPtr ptr) {
-			return ptr->receiverId == npcId;
+			return (ptr->receiverId == npcId) && (ptr->mStatus != Mission::ACCOMPLISHED);
 		}
 		);
 
@@ -93,16 +84,37 @@ public:
 		}
 	}
 
-	//void takeCoopMission(int missionId, int rId) {
-	//	inProgressCoopMissions[missionId] = availableCoopMissions[missionId];
-	//	inProgressCoopMissions[missionId]->receiverId = rId;
-	//	availableCoopMissions.erase(missionId);
-	//}
+	MissionPtr getCurrentMissionGivenBy(int npcId) {
+		auto ptr = find_if(missions.begin(), missions.end(),
+			[&npcId](MissionPtr ptr) {
+			return (ptr->giverId == npcId) && (ptr->mStatus == Mission::IN_PROGRESS);
+		}
+		);
 
-	//void takeGoalMission(int missionId) {
-	//	inProgressGoalMissions[missionId] = availableGoalMissions[missionId];
-	//	availableGoalMissions.erase(missionId);
-	//}
+		if (ptr != missions.end()) {
+			return *ptr;
+		}
+		else {
+			return nullptr;
+		}
+	}
+
+	MissionPtr getMissionToTile(int tId) {
+		auto ptr = find_if(missions.begin(), missions.end(),
+			[&tId](MissionPtr ptr) {
+			return (ptr->tileId == tId) && (ptr->mStatus == Mission::AVAILABLE);
+		}
+		);
+
+		if (ptr != missions.end()) {
+			return *ptr;
+		}
+		else {
+			return nullptr;
+		}
+	}
+
+
 
 	void takeMission(int missionId, int rId = -1) {
 
@@ -130,38 +142,46 @@ public:
 		
 	}
 
-	//void returnCoopMission(int missionId) {
-	//	availableCoopMissions[missionId] = inProgressCoopMissions[missionId];
-	//	availableCoopMissions[missionId]->receiverId = -1;
-	//	inProgressCoopMissions.erase(missionId);
-	//}
+	MissionPtr createGoalMission(int tileId) {
+		if (!missionExists(-1, tileId)) {
+			MissionPtr mission = make_shared<Mission>(getNewId(), -1, 1, Mission::AVAILABLE, -1, tileId);
+			missions.push_back(mission);
+			newGoalFound = true;
 
+			return mission;
+		}
 
-	void createGoalMission(int tileId) {
-		missions.push_back(make_shared<Mission>(getNewId(), -1, 1, Mission::AVAILABLE, tileId));
-		newGoalFound = true;
+		return nullptr;
 	}
 
-	void createCoopMission(int giverId, int ppId, int tileId) {
+	MissionPtr createCoopMission(int giverId, int ppId, int tileId, int condId) {
 
-		MissionPtr ptr = getMissionGivenTo(giverId);
-		int pLvl = ptr->priorityLvl + 1;
+		if (!missionExists(giverId, tileId))
+		{
+			MissionPtr ptr = getCurrentlyAssignedMission(giverId);
+			int pLvl = ptr != nullptr ? ptr->priorityLvl + 1 : 2;
+	
+	
+			Mission::missionStatus status = tileId == -1 ? Mission::PENDING : Mission::AVAILABLE;
+			MissionPtr mission = make_shared</*Coop*/Mission>(getNewId(), giverId, pLvl, status, condId, tileId, ppId);
+	
+			missions.push_back(mission);
+	
+			newGoalFound = true; //A REVOIR
+	
+			return mission;
+		}
 
-		if (tileId == -1) {
-			missions.push_back(make_shared</*Coop*/Mission>(getNewId(), giverId, pLvl, Mission::PENDING, tileId, ppId));
-		}
-		else {
-			missions.push_back(make_shared</*Coop*/Mission>(getNewId(), giverId, pLvl, Mission::AVAILABLE, tileId, ppId));
-		}
-		
-		newGoalFound = true; //A REVOIR
+		return nullptr;
 	}
 
-	/*void createPendingCoopMission(int giverId, int ppId) {
-		int missionId = getNewId();
-		availableCoopMissions[missionId] = make_shared<CoopMission>(missionId, giverId, ppId);
-		newGoalFound = true;
-	}*/
+	bool missionExists(int gId, int tId) {
+		auto it = find_if(missions.begin(), missions.end(), [&gId, &tId](MissionPtr mission) {
+			return mission->giverId == gId && mission->tileId == tId;
+		});
+
+		return it != missions.end();
+	}
 
 public:
 
@@ -174,13 +194,14 @@ public:
 	
 	int getNewId() { return ++IdGenerator; }
 
-	void missionDone(int npcId, int missionId);
-
-	void requestMission(int npcId, int pressurePlateId);
+	void requestMission(int npcId, int pressurePlateId, int conditionTile);
+	bool assignMission(MissionPtr newMission, MissionPtr currentMission, Agent* agent);
 
 	void update();
 
 	int getBestAgent(MissionPtr&);
 
 	void updatePendingMission(MissionPtr&);
+
+	void updateInProgressMission(MissionPtr& mission);
 };

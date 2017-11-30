@@ -52,7 +52,7 @@ void WaitCoopState::onExit(Agent * agent)
 		Connector* co2 = const_cast<Connector* >(co);
 		graphe.addForbiddenConnector(co2);
 	}
-	else {
-		MissionManager::get().missionDone(agent->getId(), agent->getMissionId());
-	}
+	//else {
+		//MissionManager::get().missionDone(agent->getId(), agent->getMissionId());
+	//}
 }
