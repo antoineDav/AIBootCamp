@@ -4,6 +4,8 @@
 #include "windows.h"
 #include "MissionManager.h"
 
+#include "Debug.h"
+
 GameManager GameManager::instance;
 
 GameManager::GameManager()
@@ -31,10 +33,15 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 {
 	graph.update(_turnInfo.tiles,_turnInfo.objects);
 	for (Agent * agent : agents) {
+		agent->setVisited();
 		agent->checkPath();
 		agent->setHasToWait(false);
 	}
 	graph.popInvalidConnectors();
+
+#ifdef DEBUGBOT_GRAPH
+	
+#endif // DEBUGBOT_GRAPH
 
 	sort(agents.begin(), agents.end(), AgentPtrComparison());
 

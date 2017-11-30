@@ -10,6 +10,7 @@ Node::Node(unsigned int tileId, int colCount) noexcept
 	, connectors{}
 	, availableConnectors{}
 {
+	visited = false;
 	x = 2*(static_cast<int>(tileId) % colCount) + y % 2;
 }
 

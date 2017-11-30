@@ -10,6 +10,7 @@ private:
 	Tile::ETilePosition direction;
 	int _objectId = -1;
 	bool isToDestroy;
+	bool isGrope = false;
 
 public:
 	void init(Node * begin, Node * end, Tile::ETilePosition direction);
@@ -43,6 +44,9 @@ public:
 	int getObjects() const { return _objectId; }
 	void setObject(int object) { _objectId= object; };
 	bool hasObject() const noexcept { return _objectId != -1; }
+
+	bool getIsGrope() { return isGrope; };
+	void setIsGrope() { isGrope = true; };
 
 	bool hasDoor() const noexcept;
 };

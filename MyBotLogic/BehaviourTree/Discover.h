@@ -1,6 +1,14 @@
 #pragma once
 #include "Task.h"
 
-class Discover : public Task {
+class DiscoverNear : public Task {
+	virtual Result execute(Agent *) override;
+};
+
+class DiscoverFar : public Task {
+	virtual Result execute(Agent *) override;
+};
+
+class DiscoverDoor : public Task {
 	virtual Result execute(Agent *) override;
 };

@@ -4,6 +4,8 @@
 #include <map>
 #include "TurnInfo.h"
 #include "ObjectInfo.h"
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -16,6 +18,7 @@ private:
 	vector<Connector> connectors;
 	vector<Connector*> forbiddenConnector;
 	vector<Connector*> wallConnector;
+	vector<Connector*> wallGrope;
 	map<unsigned int, ObjectInfo> objects;
 
 private:
@@ -70,11 +73,23 @@ public:
 	void addForbiddenConnector(Connector* co) {
 		forbiddenConnector.push_back(co);
 	}
+	
+	void removeWallConnector(const Connector* co) {
+		auto c = find_if(wallConnector.begin(), wallConnector.end(), [&co](Connector * it) {
+			return it->getObjects() == co->getObjects();
+		});
+		wallConnector.erase(c);
+	}
+
+	vector<Connector*> getWallGrope() { return wallGrope; }
+	void setWallGrope(Connector* connector) { wallGrope.push_back(connector); }
 
 	void popInvalidConnectors() noexcept;
-
-	vector<const Connector*> getPath(int beginId, int goalId);
-	vector<const Connector*> getBestUnkown(int startId);
+	void setVisitedNode(int id) { nodes[id].setVisited(); };
+	vector<const Connector*> getPath(int beginId, int goalId); 
+	vector<const Connector*> getNearUnkown(int startId);
+	vector<const Connector*> getFarUnkown(int startId);
+	vector<const Connector *> wallGroping(int startId);
 
 	map<unsigned int, ObjectInfo> getObjects() { return objects; };
 

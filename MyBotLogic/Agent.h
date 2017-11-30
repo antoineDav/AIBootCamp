@@ -64,6 +64,9 @@ public:
 	void setPath(vector<const Connector *>& nPath) {
 		path = nPath;
 	}
+	
+	void setVisited();
+
 	vector<const Connector *>& getPath() {
 		return path;
 	}

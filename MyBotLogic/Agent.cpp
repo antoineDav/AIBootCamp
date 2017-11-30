@@ -55,6 +55,8 @@ void Agent::forceToWait(Agent * source)
 			ag->forceToWait(this);
 		}
 	}
+void Agent::setVisited() {
+	GameManager::get().getGraph().setVisitedNode(this->pos);
 }
 
 

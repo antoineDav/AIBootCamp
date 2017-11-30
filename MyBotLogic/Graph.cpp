@@ -4,6 +4,8 @@
 #include "GameManager.h"
 #include "MissionManager.h"
 
+#include "Debug.h"
+
 int Graph::getPositionId(int x, int y) const noexcept {
 	if ((x >= 0) && (x < colCount*2) && (y >= 0) && (y < rowCount))
 		return x / 2 + colCount * y;
@@ -64,6 +66,33 @@ void Graph::updateNodesType(const std::map<unsigned int, TileInfo>& tiles) noexc
 			MissionManager::get().createGoalMission(tile.second.tileID);
 		}
 		nodes[tile.second.tileID].setType(tile.second.tileType);
+#ifdef DEBUGBOT_GRAPH
+		file << "Node id : " << tile.second.tileID << " - "  << endl;
+		const map<Tile::ETileType, const char*> tileTypeString{
+			{ Tile::ETileType::TileAttribute_Default , "Default" },
+			{ Tile::ETileType::TileAttribute_Goal, "Goal" },
+			{ Tile::ETileType::TileAttribute_Forbidden, "Forbidden" },
+			{ Tile::ETileType::TileAttribute_Omniscient, "Omniscient" },
+			{ Tile::ETileType::TileAttribute_Unknown, "Unknown" }
+		};
+		const map<Tile::ETilePosition, const char*> tilePositionString{
+			{ Tile::ETilePosition::NE , "NE" },
+			{ Tile::ETilePosition::E, "E" },
+			{ Tile::ETilePosition::SE, "S" },
+			{ Tile::ETilePosition::SW, "SW" },
+			{ Tile::ETilePosition::W, "W" },
+			{ Tile::ETilePosition::NW, "NW" },
+			{ Tile::ETilePosition::CENTER, "CENTER" }
+		};
+		file << "\tType : " << tileTypeString.find(tile.second.tileType)->second << endl;
+		std::vector<Connector*>* connectors = GameManager::get().getGraph().getNode(tile.first).getAvailableConnectors();
+		for (auto connector : *connectors){
+			file << "\tConnector : " << connector->getBeginNode()->getId() << " -> " << connector->getEndNode()->getId() << endl;
+			file << "\t\t\tDirection : " << tilePositionString.find(connector->getDirection())->second << endl;
+			file << "\t\t\tObject Id : " << connector->getObjects() << endl;
+			file << "\t\t\tIs Destroy : " << connector->getIsToDestroy() << endl;
+		}
+#endif // DEBUGBOT_GRAPH
 	});
 }
 
@@ -140,7 +169,19 @@ void Graph::updateConnectorsWithObjects(const std::map<unsigned int, ObjectInfo>
 				}
 			}
 		}
+		for (Connector* wG : this->wallGrope)
+		{
+			if (wG->getObjects() == object.second.objectID && objectTypes.find(Object::ObjectType_Door) != objectTypes.end())
+			{
+				wG->getBeginNode()->popConnector(wG->getEndNode());
+				wG->setIsToDestroy(false);
+				wG->getBeginNode()->addAvailableConnector(wG);
+				continue;
+			}
+		}
 	});
+	wallGrope.clear();
+	
 }
 
 void Graph::update(const map<unsigned int, TileInfo>& tiles, const std::map<unsigned int, ObjectInfo>& objects) noexcept {
@@ -332,7 +373,7 @@ void Graph::popInvalidConnectors() noexcept {
 	forbiddenConnector.clear();
 }
 
-vector<const Connector*> Graph::getBestUnkown(int startId) {
+vector<const Connector*> Graph::getFarUnkown(int startId) {
 	Node* start{ &getNode(startId) };
 
 	NodeItem *startRecord = new NodeItem{};
@@ -428,4 +469,88 @@ int Graph::getPressurePlatePosition(int ppId) {
 	else {
 		return -1;
 	}
+}
+vector<const Connector*> Graph::getNearUnkown(int startId) {
+	vector<const Connector*> path = {};
+	Node* start{ &getNode(startId) };
+	int potential = 0;
+	int previousPotential = 0;
+	unsigned int plateId = -1;
+	for (auto neighboursConnector : *start->getAvailableConnectors()) {
+		Node* neighbor = neighboursConnector->getEndNode();
+		if (neighbor->getVisited() == false) {
+			if(neighbor->getObjects() >= 0){
+				plateId = neighbor->getObjects();
+			}
+			for (auto neighborConnector : *neighbor->getConnectors()) {
+				if (!neighborConnector->hasObject()) {
+					potential += 2;
+				}
+				else {
+					ObjectInfo obj = Graph::getObjects()[neighborConnector->getObjects()];
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(),Object::ObjectType_Window)!= obj.objectTypes.end()) {
+						potential += 6;
+					}
+					else if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Door)!= obj.objectTypes.end() ){
+						if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end() && obj.connectedTo.empty()) {
+							potential += 3;
+						}
+						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end() && find(obj.connectedTo.begin(), obj.connectedTo.end(),plateId)!= obj.connectedTo.end()) {
+							potential += 10;
+						}
+						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Opened) != obj.objectStates.end() && neighborConnector->getBeginNode()->getVisited() == false) {
+							potential += 15;
+						}
+						else {
+							++potential;
+						}
+					}
+				}
+			}
+			if (potential > previousPotential){
+				path.clear();
+				path.push_back(neighboursConnector);
+				previousPotential = potential;
+			}
+			potential = 0;
+			plateId = -1;
+		}
+	}
+	//return one connector
+	return path;
+}
+
+vector<const Connector *> Graph::wallGroping(int startId) {
+	vector<const Connector*> path = {};
+	Node* start{ &getNode(startId) };
+	for (auto neighboursConnector : *start->getConnectors()) {
+		if (neighboursConnector->getObjects() != -1 && neighboursConnector->getIsGrope() == false) {
+			ObjectInfo obj = Graph::getObjects()[neighboursConnector->getObjects()];
+			if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
+				neighboursConnector->setIsGrope();
+				path.push_back(neighboursConnector);
+				return path;
+			}
+		}
+	}
+	if (path.empty())
+	{
+		for (auto neighboursConnector : *start->getAvailableConnectors()) {
+			Node* neighbor{ neighboursConnector->getEndNode() };
+			for (auto neighborConnector : *neighbor->getConnectors()) {
+				if (neighborConnector->getObjects() != -1 && neighborConnector->getIsGrope() == false) {
+					ObjectInfo obj = Graph::getObjects()[neighborConnector->getObjects()];
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
+						path.push_back(neighboursConnector);
+						return path;
+					}
+					if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Door) != obj.objectTypes.end()) {
+						path.push_back(neighboursConnector);
+						return path;
+					}
+				}
+			}
+		}
+	}
+	return path;
 }
