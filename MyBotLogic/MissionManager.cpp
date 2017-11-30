@@ -1,36 +1,60 @@
 #include "MissionManager.h"
 #include "MyBotLogic\Graph.h"
 #include "MyBotLogic\GameManager.h"
+#include <string>
+
 
 MissionManager MissionManager::instance;
 
-void MissionManager::missionDone(int npcId, int missionId) {
-	//TODO change isHelping in agent
-	MissionPtr ptr = getMissionById(missionId);
-	
-	ptr->mStatus = Mission::ACCOMPLISHED;
-}
+//void MissionManager::missionDone(int npcId, int missionId) {
+//	//TODO change isHelping in agent
+//	MissionPtr ptr = getMissionById(missionId);
+//	
+//	ptr->mStatus = Mission::ACCOMPLISHED;
+//}
 
-void MissionManager::requestMission(int npcId, int doorId) {
+void MissionManager::requestMission(int npcId, int doorId, int conditionTile) {
 	Graph& graph = GameManager::get().getGraph();
 
 	auto pps = graph.getObjects()[doorId].connectedTo;
 
 	for_each(pps.begin(), pps.end(), [&](int ppId) {
-		createCoopMission(npcId, ppId, graph.getPressurePlatePosition(ppId));
+		createCoopMission(npcId, ppId, graph.getPressurePlatePosition(ppId), conditionTile);
 	});
+
+	//Create mission for giver to cross door
+	MissionPtr mission = createGoalMission(conditionTile);
+	mission->conditionTileId = conditionTile;
+	mission->giverId = npcId;
+	assignMission(mission, getCurrentlyAssignedMission(npcId), GameManager::get().getAgentById(npcId));
 
 }
 
-void MissionManager::update() {
 
+
+
+void MissionManager::update() {
 	GameManager& gm = GameManager::get();
+
+	//mLog.Log("Missions on turn " + to_string(gm.))
+	mLog.Log("	-------------------NEW TURN!! " + std::to_string(++tour) +"------------------\n ");
 
 	//Update pending missions if possible
 	for (auto& mission : missions) {
+		mLog.Log("\nMission n " + std::to_string(mission->missionId));
+		mLog.Log("	GiverId " + std::to_string(mission->giverId));
+		mLog.Log("	ReceiverId " + std::to_string(mission->receiverId));
+		mLog.Log("	tileId " + std::to_string(mission->tileId));
+		mLog.Log("	conditionId " + std::to_string(mission->conditionTileId));
+		mLog.Log("	priority " + std::to_string(mission->priorityLvl));
+		mLog.Log("	status " + std::to_string(mission->mStatus));
+		mLog.Log("	--------------------------------------------------\n ");
 
 		if (mission->mStatus == Mission::PENDING) {
 			updatePendingMission(mission);
+		}
+		else if (mission->conditionTileId != -1 && mission->mStatus == Mission::IN_PROGRESS) {
+			updateInProgressMission(mission);
 		}
 	}
 
@@ -97,6 +121,40 @@ void MissionManager::updatePendingMission(MissionPtr& mission) {
 	}
 }
 
+void MissionManager::updateInProgressMission(MissionPtr& mission) {
+
+	//If the giver agent is on the condition tile, mission accompished
+	GameManager& gm = GameManager::get();
+
+	Agent* giverAgent = gm.getAgentById(mission->giverId);
+
+	if (giverAgent->getPos() == mission->conditionTileId) {
+
+		mission->mStatus = Mission::ACCOMPLISHED;
+
+		Agent * receiverAgent = gm.getAgentById(mission->receiverId);
+		
+		//If receiver previously requested help, go back to that mission at all costs
+		MissionPtr helpMission = getCurrentMissionGivenBy(mission->receiverId);
+
+		if (helpMission != nullptr) {
+
+			MissionPtr previousMission = getMissionToTile(helpMission->conditionTileId);
+
+			assignMission(previousMission, nullptr, receiverAgent);
+
+		}
+		else { //Else, send back to explore mode
+
+			receiverAgent->setSearching(true);
+			receiverAgent->setMissionId(-1, -1);
+			receiverAgent->setHelping(false);
+		}
+
+	}
+}
+
+
 int MissionManager::getBestAgent(MissionPtr& mission) {
 
 	GameManager& gm = GameManager::get();
@@ -113,7 +171,7 @@ int MissionManager::getBestAgent(MissionPtr& mission) {
 
 			//Check if agent already has a mission
 			int currentPriorityLevel;
-			MissionPtr ptr = getMissionGivenTo(agent->getId());
+			MissionPtr ptr = getCurrentlyAssignedMission(agent->getId());
 
 			if (ptr != nullptr) {
 				currentPriorityLevel = ptr->priorityLvl;
@@ -124,7 +182,8 @@ int MissionManager::getBestAgent(MissionPtr& mission) {
 
 
 			if (agent->getId() != mission->giverId &&  //Agent cannot help itself
-				missionPriorityLvl > currentPriorityLevel) //Mission must have higher priority to override previous mission
+				missionPriorityLvl > currentPriorityLevel && //Mission must have higher priority to override previous mission
+				!agent->getDoNotDisturb()) 
 			{
 
 				vector<int>& forbiddens = agent->getForbiddens();
@@ -144,38 +203,44 @@ int MissionManager::getBestAgent(MissionPtr& mission) {
 		if (minNPC == nullptr) {
 
 			//Goal is forbidden for all agents
-			mission->mStatus = Mission::IMPOSSIBLE;
+			//mission->mStatus = Mission::IMPOSSIBLE;
 			return -1;
 			
 		}
 		else {
-			//Check for valid path
-			vector<const Connector *> path = gm.getGraph().getPath(minNPC->getPos(), mission->tileId);
-			if (path.size() == 0) {
-				minNPC->addForbidden(mission->tileId);
-			}
-			else {
-				found = true;
 
-				//Return current lower priority mission if any
-				if (minNPCCurrentMission != nullptr) {
-					returnMission(minNPCCurrentMission->missionId);
-				}
-				
-
-				//Assign new mission
-				minNPC->setPath(path);
-				minNPC->setPathValid(true);
-				minNPC->setSearching(false);
-				minNPC->setMissionId(mission->missionId, mission->tileId);
-				//Set ishelping?
-
-				takeMission(mission->missionId, minNPC->getId());
-
-				//TODO Update priorityLvl of agents helping this npc if any
-
+			if (assignMission(mission, minNPCCurrentMission, minNPC)) {
 				return minNPC->getId();
 			}
+			
 		}
+	}
+}
+
+bool MissionManager::assignMission(MissionPtr newMission, MissionPtr currentMission, Agent* agent) {
+
+	GameManager& gm = GameManager::get();
+
+	//Check for valid path
+	vector<const Connector *> path = gm.getGraph().getPath(agent->getPos(), newMission->tileId);
+	if (path.size() == 0) {
+		agent->addForbidden(newMission->tileId);
+		return false;
+	}
+	else {
+		//Return current lower priority mission if any
+		if (currentMission != nullptr) {
+			returnMission(currentMission->missionId);
+		}
+
+		//Assign new mission
+		agent->setPath(path);
+		agent->setPathValid(true);
+		agent->setSearching(false);
+		agent->setMissionId(newMission->missionId, newMission->tileId);
+
+		takeMission(newMission->missionId, agent->getId());
+
+		return true;
 	}
 }

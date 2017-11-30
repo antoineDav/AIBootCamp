@@ -23,6 +23,7 @@ private:
 	bool isSearching = false;
 	bool isHelping = false;
 	bool hasToWait = false;
+	bool doNotDisturb = false;
 
 public:
 	int getId() {
@@ -100,6 +101,13 @@ public:
 	bool getIsHelping() {
 		return isHelping;
 	}
+	void setDoNotDisturb(bool b) {
+		doNotDisturb = b;
+	}
+	bool getDoNotDisturb() {
+		return doNotDisturb;
+	}
+
 	State* getCurrState() { return currState; }
 	void setCurrState(State * newState) { currState = newState; }
 	bool getHasToWait() { return hasToWait; }

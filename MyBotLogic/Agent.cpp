@@ -48,6 +48,17 @@ void Agent::checkPath()
 	}
 }
 
+void Agent::forceToWait(Agent * source)
+{
+	setCurrState(&LogicManager::get().getWaitState());
+	setHasToWait(true);
+	for (auto ag : GameManager::get().getAgents()) {
+		if (ag->getId() != id && ag->getNextPos() == getPos()) {
+			ag->forceToWait(this);
+		}
+	}
+}
+
 
 void Agent::setVisited() {
 	GameManager::get().getGraph().setVisitedNode(this->pos);
