@@ -475,11 +475,14 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 				plateId = neighbor->getObjects();
 			}
 			for (auto neighborConnector : *neighbor->getConnectors()) {
+				ObjectInfo obj = Graph::getObjects()[neighborConnector->getObjects()];
+				if (neighborConnector->getEndNode()->getId() == startId) {
+					continue;
+				}
 				if (!neighborConnector->hasObject()) {
 					potential += 2;
 				}
 				else {
-					ObjectInfo obj = Graph::getObjects()[neighborConnector->getObjects()];
 					if (find(obj.objectTypes.begin(), obj.objectTypes.end(),Object::ObjectType_Window)!= obj.objectTypes.end()) {
 						potential += 6;
 					}
@@ -496,6 +499,18 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 						else {
 							++potential;
 						}
+					}
+				}
+				if (neighborConnector->getEndNode()->getVisited()) {
+					--potential;
+				}
+				else if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) == obj.objectTypes.end() && neighborConnector->getBeginNode()->getType() == Tile::TileAttribute_Unknown) {
+					potential += 2;
+				}
+				for (auto npc : GameManager::get().getAgents()) {
+					if (neighboursConnector->getBeginNode()->getId() == npc->getPos()) {
+						potential = 0;
+						break;
 					}
 				}
 			}
