@@ -45,7 +45,7 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 			MissionManager& mm = MissionManager::get();
 			
 			mm.requestMission(agent->getId(), co->getObjects(), co->getEndNode()->getId());
-			mm.createGoalMission(co->getEndNode()->getId());
+			//mm.createGoalMission(co->getEndNode()->getId());
 
 			return &LogicManager::get().getWaitCoopState(); 
 		}

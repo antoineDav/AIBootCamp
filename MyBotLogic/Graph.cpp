@@ -4,6 +4,7 @@
 #include "GameManager.h"
 #include "MissionManager.h"
 
+#include "Debug.h"
 
 int Graph::getPositionId(int x, int y) const noexcept {
 	if ((x >= 0) && (x < colCount*2) && (y >= 0) && (y < rowCount))
