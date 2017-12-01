@@ -13,7 +13,7 @@ private:
 
 	int id;
 	Tile::ETileType type;
-	int _objectId;
+	int _objectId = -1;
 
 	bool visited = 0;
 

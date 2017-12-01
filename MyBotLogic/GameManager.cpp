@@ -3,7 +3,6 @@
 
 #include "windows.h"
 #include "MissionManager.h"
-
 #include "Debug.h"
 
 GameManager GameManager::instance;
@@ -39,16 +38,15 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	}
 	graph.popInvalidConnectors();
 
-#ifdef DEBUGBOT_GRAPH
-	
-#endif // DEBUGBOT_GRAPH
-
 	sort(agents.begin(), agents.end(), AgentPtrComparison());
 
 	MissionManager::get().update();
 
 	for (Agent * agent : agents)
 	{
+#ifdef DEBUGBOT_TREE
+		file << "\tId :  " << std::to_string(agent->getId()) << " - pos : " << std::to_string(agent->getPos());
+#endif DEBUGBOT_TREE
 		agent->makeDecisions();
 	}
 	for (Agent * agent : agents)

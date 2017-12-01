@@ -59,7 +59,7 @@ if not exist "%AIBOOTCAMP_DIR%/Levels/%mapname%.level" (
     goto fail
 )
 
-"%AIBOOTCAMP_ENGINE_DIR%/AIBootCamp.exe" -level %mapname% -AIBotPath %aibotpath% -AIBotLogPath %~dp0\LocalMatchResults\aibotlog -GameLogPath %~dp0\LocalMatchResults\gamelog -JobID %JOBNAME% -Team %TEAMNAME% -LoadTime %LoadTime% -InitTime %InitTime% -TurnTime 100000 -quit -batchmode
+"%AIBOOTCAMP_ENGINE_DIR%/AIBootCamp.exe" -level %mapname% -AIBotPath %aibotpath% -AIBotLogPath %~dp0\LocalMatchResults\aibotlog -GameLogPath %~dp0\LocalMatchResults\gamelog -JobID %JOBNAME% -Team %TEAMNAME% -LoadTime %LoadTime% -InitTime %InitTime% -TurnTime 1000000 -quit -batchmode
 
 "%PYTHON_PATH%/python.exe" GenAIBootCampViewerFiles.py %~dp0/LocalMatchResults/gamelog/GameReplay.log %~dp0/LocalMatchResults/gamelog/GameReplay.js %~dp0/LocalMatchResults/gamelog/AIBootCampResults.html
 

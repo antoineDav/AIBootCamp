@@ -4,7 +4,6 @@
 #include "GameManager.h"
 #include "MissionManager.h"
 
-#include "Debug.h"
 
 int Graph::getPositionId(int x, int y) const noexcept {
 	if ((x >= 0) && (x < colCount*2) && (y >= 0) && (y < rowCount))
@@ -230,8 +229,35 @@ public:
 };
 
 vector<const Connector*> Graph::getPath(int startId, int goalId) {
+#ifdef DEBUGBOT_TREE
+	file << "A* - id : " << startId << " - Goal : " << goalId << endl;
+#endif DEBUGBOT_TREE
+	
 	Node* start{ &getNode(startId) };
 	Node* end{ &getNode(goalId) };
+	vector<const Connector*> path {};
+
+
+	std::map<unsigned int, ObjectInfo>& obj = GameManager::get().getGraph().getObjects();
+	if (GameManager::get().getAgents().size() == 1) {
+		int valid = 0;
+		for (auto connector : *end->getAvailableConnectors()) {
+			if (connector->getObjects() < 0) {
+				++valid;
+			}
+			else {
+				for (auto connectId : obj[connector->getObjects()].connectedTo) {
+					if (obj[connectId].tileID == connector->getEndNode()->getId()) {
+						++valid;
+					}
+				}
+			}
+		}
+		if (valid==0) {
+			return path;
+		}
+	}
+
 
 	HeuristicManhattan heuristic{ &getNode(goalId)};
 
@@ -322,9 +348,7 @@ vector<const Connector*> Graph::getPath(int startId, int goalId) {
 		closedList.push_back(current);
 	}
 
-
-	vector<const Connector*> path;
-
+	
 	if (*current->ptr != *end)
 		// FAILURE
 		return path; 
@@ -373,7 +397,10 @@ void Graph::popInvalidConnectors() noexcept {
 	forbiddenConnector.clear();
 }
 
-vector<const Connector*> Graph::getFarUnkown(int startId) {
+vector<const Connector*> Graph::getFarUnkown(int startId) {	
+#ifdef DEBUGBOT_TREE
+	file << "FarDiscover - id : " << startId << " - Goal : ";
+#endif DEBUGBOT_TREE
 	Node* start{ &getNode(startId) };
 
 	NodeItem *startRecord = new NodeItem{};
@@ -437,7 +464,9 @@ vector<const Connector*> Graph::getFarUnkown(int startId) {
 
 		closedList.push_back(current);
 	}
-
+#ifdef DEBUGBOT_TREE
+	file << current->connector->getBeginNode()->getId() << endl; 
+#endif DEBUGBOT_TREE
 	vector<const Connector *> path;
 	if (current->ptr->getType() != Tile::ETileType::TileAttribute_Unknown)
 		// FAILURE
@@ -449,7 +478,6 @@ vector<const Connector*> Graph::getFarUnkown(int startId) {
 			current = current->previous;
 		}
 	}
-
 	//We liberate all the memory
 	std::for_each(closedList.begin(), closedList.end(), [](NodeItem* ni) {
 		ni->previous = nullptr;
@@ -463,6 +491,10 @@ vector<const Connector*> Graph::getFarUnkown(int startId) {
 }
 
 vector<const Connector*> Graph::getNearUnkown(int startId) {
+#ifdef DEBUGBOT_TREE
+	file << "NearDiscover - id : " << startId << " - Goal : ";
+#endif DEBUGBOT_TREE
+	
 	vector<const Connector*> path = {};
 	Node* start{ &getNode(startId) };
 	int potential = 0;
@@ -493,7 +525,7 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Closed) != obj.objectStates.end() && find(obj.connectedTo.begin(), obj.connectedTo.end(),plateId)!= obj.connectedTo.end()) {
 							potential += 10;
 						}
-						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Opened) != obj.objectStates.end() && neighborConnector->getBeginNode()->getVisited() == false) {
+						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Opened) != obj.objectStates.end() && neighborConnector->getEndNode()->getVisited() == false) {
 							potential += 15;
 						}
 						else {
@@ -504,11 +536,11 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 				if (neighborConnector->getEndNode()->getVisited()) {
 					--potential;
 				}
-				else if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) == obj.objectTypes.end() && neighborConnector->getBeginNode()->getType() == Tile::TileAttribute_Unknown) {
+				else if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) == obj.objectTypes.end() && neighborConnector->getEndNode()->getType() == Tile::TileAttribute_Unknown) {
 					potential += 2;
 				}
 				for (auto npc : GameManager::get().getAgents()) {
-					if (neighboursConnector->getBeginNode()->getId() == npc->getPos()) {
+					if (neighboursConnector->getEndNode()->getId() == npc->getPos()) {
 						potential = 0;
 						break;
 					}
@@ -523,6 +555,12 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 			plateId = -1;
 		}
 	}
+#ifdef DEBUGBOT_TREE
+	if (!path.empty())
+	{
+		file << path.back()->getEndNode()->getId() << endl;
+	}
+#endif DEBUGBOT_TREE
 	//return one connector
 	return path;
 }
