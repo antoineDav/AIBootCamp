@@ -14,10 +14,10 @@ class MissionManager {
 public:
 
 	using MissionPtr = shared_ptr<Mission>;
-
+	int tour;
 private:
 	Logger mLog;
-	int tour;
+	
 
 	static MissionManager instance;
 
@@ -25,7 +25,8 @@ private:
 
 	int IdGenerator;
 	MissionManager() : IdGenerator{}, missions{}, tour{} {
-		mLog.Init("\\INF781\\Labos\\AIBootCamp_3\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
+		//mLog.Init("\\INF781\\Labos\\AIBootCamp_3\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
+		mLog.Init("C:\\Users\\patn2904\\Documents\\INF781_IA\\AIBootCamp\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
 	}
 	MissionManager(MissionManager&) = delete;
 	MissionManager& operator=(MissionManager&) = delete;
@@ -183,6 +184,7 @@ public:
 		return it != missions.end();
 	}
 
+	void swapMissions(Agent& agGoal, Agent& otherAg);
 public:
 
 	void goalFound() {

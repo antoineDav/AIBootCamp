@@ -24,14 +24,23 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 			found = true;
 		}
 	});
-
+	bool startMoving = false;
 	if (found || agent->getPos() == agent->getGoal() || agent->getHasToWait()) {
 		for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
-			if (ag->getNextPos() == agent->getPos()/* && (ag->getCurrState() == &LogicManager::get().getWaitState() || ag->getPath().empty())*/)
+			if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getPos()/* && (ag->getCurrState() == &LogicManager::get().getWaitState() || ag->getPath().empty())*/)
 			{
-				ag->forceToWait(agent);
+				if (agent->getGoal() == agent->getPos()/* && !startMoving*/) {
+					MissionManager::get().swapMissions(*agent, *ag);
+					/*ag->setHasToWait(false);
+					agent->setHasToWait(false);*/
+					//startMoving = true;
+				}
+				else {
+					ag->forceToWait(agent);
+				}
 			}
 		});
+		if (startMoving) return &LogicManager::get().getMoveState();
 		return &LogicManager::get().getWaitState();
 	}
 

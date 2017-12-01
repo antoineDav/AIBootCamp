@@ -2,9 +2,76 @@
 #include "MyBotLogic\Graph.h"
 #include "MyBotLogic\GameManager.h"
 #include <string>
+#include <algorithm>
 
 
 MissionManager MissionManager::instance;
+
+void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
+{
+
+	//Swapping whole agent identities
+	/*swap(agGoal, otherAg);
+	
+	//Swapping back their ids
+	int agGoalId = agGoal.getId();
+	int otherAgId = otherAg.getId();
+	agGoal.setId(otherAgId);
+	otherAg.setId(agGoalId);
+
+	//Swapping back their positions
+	int posGoal = agGoal.getPos();
+	agGoal.setPos(otherAg.getPos());
+	otherAg.setPos(posGoal);
+
+	
+	if (!agGoal.getPath().empty()) {
+		vector<const Connector*> nextMovePath;
+		nextMovePath.push_back(agGoal.getPath().back());
+		agGoal.getPath().pop_back();
+		otherAg.setPath(nextMovePath);
+	}
+*/
+
+
+
+	
+
+	/*MissionPtr pm1 = getMissionById(agGoal.getMissionId());
+	MissionPtr pm2 = getMissionById(otherAg.getMissionId());
+*/
+
+	//std::swap(pm1->receiverId, pm2->receiverId);
+	
+	int agGoalId = agGoal.getId();
+	int otherAgId = otherAg.getId();
+	
+	int mId = agGoal.getMissionId();
+	int gId = agGoal.getGoal();
+	agGoal.setMissionId(otherAg.getMissionId(), otherAg.getGoal());
+	otherAg.setMissionId(mId, gId);
+	
+	//swap isHealping
+	bool isHelping1 = agGoal.getIsHelping();
+	agGoal.setHelping(otherAg.getIsHelping());
+	otherAg.setHelping(isHelping1);
+
+	//Swap paths
+	vector<const Connector*> path = agGoal.getPath();
+	agGoal.setPath(otherAg.getPath());
+	otherAg.setPath(path);
+
+	for_each(missions.begin(), missions.end(), [&](MissionPtr m) {
+		if (m->giverId == agGoalId || m->giverId == otherAgId) {
+			m->giverId = (m->giverId == agGoalId) ? otherAgId : agGoalId;
+		}
+		if (m->receiverId == agGoalId || m->receiverId == otherAgId) {
+			m->receiverId = (m->receiverId == agGoalId) ? otherAgId : agGoalId;
+		}
+	});
+
+
+}
 
 //void MissionManager::missionDone(int npcId, int missionId) {
 //	//TODO change isHelping in agent

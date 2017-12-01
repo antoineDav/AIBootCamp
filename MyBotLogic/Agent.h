@@ -29,6 +29,13 @@ public:
 	int getId() {
 		return id;
 	}
+	void setId(int agId) {
+		id = agId;
+	}
+	/*void setLifePurpose(int mId, int gId, vector<Connector*> path, pathValid) {
+		
+	}*/
+
 	int getMissionId() {
 		return missionId;
 	}
