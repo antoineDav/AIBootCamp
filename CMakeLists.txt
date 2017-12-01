@@ -53,7 +53,8 @@ SET( AIBOT_HEADERS
 	MyBotLogic/LogicManager.h
 	MyBotLogic/MissionManager.h
 	MyBotLogic/Mission.h
-	
+	MyBotLogic/Debug.h
+
 	MyBotLogic/State/WaitState.h
 	MyBotLogic/State/MoveState.h
 	MyBotLogic/State/WaitCoopState.h

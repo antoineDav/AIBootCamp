@@ -103,11 +103,16 @@ void MissionManager::requestMission(int npcId, int doorId, int conditionTile) {
 void MissionManager::update() {
 	GameManager& gm = GameManager::get();
 
+
 	//mLog.Log("Missions on turn " + to_string(gm.))
 	mLog.Log("	-------------------NEW TURN!! " + std::to_string(++tour) +"------------------\n ");
-
+	mLog.Log("\n\nAgents : \n");
+	for (auto& agent : GameManager::get().getAgents())
+	{
+		mLog.Log("Id :  " + std::to_string(agent->getId()) + " - pos : " + std::to_string(agent->getPos()));
+	}
 	//Update pending missions if possible
-	for (auto& mission : missions) {
+	for (auto& mission : missions) {		
 		mLog.Log("\nMission n " + std::to_string(mission->missionId));
 		mLog.Log("	GiverId " + std::to_string(mission->giverId));
 		mLog.Log("	ReceiverId " + std::to_string(mission->receiverId));
@@ -127,7 +132,6 @@ void MissionManager::update() {
 
 	//Sort missions by priority
 	sort(missions.begin(), missions.end(), MissionPtrComparison());
-
 
 	//Try to assign available missions in order of priority
 	for (auto& mission : missions) {
@@ -249,8 +253,7 @@ int MissionManager::getBestAgent(MissionPtr& mission) {
 
 
 			if (agent->getId() != mission->giverId &&  //Agent cannot help itself
-				missionPriorityLvl > currentPriorityLevel && //Mission must have higher priority to override previous mission
-				!agent->getDoNotDisturb()) 
+				missionPriorityLvl > currentPriorityLevel) //Mission must have higher priority to override previous mission
 			{
 
 				vector<int>& forbiddens = agent->getForbiddens();

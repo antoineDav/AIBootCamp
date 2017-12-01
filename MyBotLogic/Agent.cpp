@@ -3,11 +3,14 @@
 #include "State/WaitState.h"
 #include "LogicManager.h"
 #include "GameManager.h"
+#include "Graph.h"
+
 Agent::Agent(int agentId)
 {
 	id = agentId;
 	missionId = -1;
 	goalId = -1;
+	pos = -1;
 	currState = &LogicManager::get().getMoveState();
 	isSearching = true;
 	isHelping = false;
@@ -59,5 +62,4 @@ void Agent::forceToWait(Agent * source) {
 void Agent::setVisited() {
 	GameManager::get().getGraph().setVisitedNode(this->pos);
 }
-
 

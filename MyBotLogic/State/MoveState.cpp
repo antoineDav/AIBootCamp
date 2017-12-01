@@ -14,7 +14,7 @@ MoveState::MoveState()
 
 State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {	
-	Graph graph = GameManager::get().getGraph();
+	Graph& graph = GameManager::get().getGraph();
 	bool found = false;
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
 		// Determine si un autre agent va tenter de se déplacer sur la même position que notre agent (CONFLIT) 
@@ -80,11 +80,13 @@ Action * MoveState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 			return new Interact(agent->getId(), GameManager::get().getGraph().getObjects()[objectInfoId].objectID, Interact::Interaction_OpenDoor);
 		}
 	}
+
 	ObjectInfo obj = GameManager::get().getGraph().getObjects()[co->getObjects()];
 	if (find(obj.objectTypes.begin(), obj.objectTypes.end(), Object::ObjectType_Wall) != obj.objectTypes.end()) {
 		GameManager::get().getGraph().setWallGrope(const_cast<Connector*>(co));
 		return new Interact(agent->getId(), obj.objectID, Interact::Interaction_SearchHiddenDoor);
 	}
+
 	agent->setPos(agent->getNextPos());
 	Action * act = new Move(agent->getId(), agent->getPath().back()->getDirection());
 	agent->getPath().pop_back();

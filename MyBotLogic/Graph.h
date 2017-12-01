@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 
+
 using namespace std;
 
 class Graph
@@ -20,6 +21,7 @@ private:
 	vector<Connector*> wallConnector;
 	vector<Connector*> wallGrope;
 	map<unsigned int, ObjectInfo> objects;
+
 
 private:
 	Node& getNode(int id) noexcept {

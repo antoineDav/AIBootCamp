@@ -39,7 +39,7 @@ Action * WaitCoopState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 
 void WaitCoopState::onExit(Agent * agent)
 {
-	Graph graphe = GameManager::get().getGraph();
+	Graph& graphe = GameManager::get().getGraph();
 	const Connector* co = agent->getPath().back();
 
 	// In case the agent is alone and can't cooperate
@@ -52,7 +52,4 @@ void WaitCoopState::onExit(Agent * agent)
 		Connector* co2 = const_cast<Connector* >(co);
 		graphe.addForbiddenConnector(co2);
 	}
-	//else {
-		//MissionManager::get().missionDone(agent->getId(), agent->getMissionId());
-	//}
 }
