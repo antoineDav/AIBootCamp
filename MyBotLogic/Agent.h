@@ -70,7 +70,15 @@ public:
 	void setPath(vector<const Connector *>& nPath) {
 		path = nPath;
 	}
-	
+
+	void addToPath(const Connector* connector) {
+		path.push_back(connector);
+	}
+
+	void clearPath() {
+		path.clear();
+	}
+
 	void setVisited();
 
 	vector<const Connector *>& getPath() {

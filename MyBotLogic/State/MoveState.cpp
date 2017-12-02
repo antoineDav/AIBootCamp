@@ -30,10 +30,11 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 			if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getPos()/* && (ag->getCurrState() == &LogicManager::get().getWaitState() || ag->getPath().empty())*/)
 			{
 				if (agent->getGoal() == agent->getPos()/* && !startMoving*/) {
-					MissionManager::get().swapMissions(*agent, *ag);
+					//MissionManager::get().swapMissions(*agent, *ag);
 					/*ag->setHasToWait(false);
 					agent->setHasToWait(false);*/
 					//startMoving = true;
+					//return nullptr;
 				}
 				else {
 					ag->forceToWait(agent);
@@ -95,4 +96,9 @@ Action * MoveState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 
 void MoveState::onExit(Agent * agent)
 {
+}
+
+char* MoveState::stringType()
+{
+	return "MoveState";
 }

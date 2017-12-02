@@ -13,14 +13,14 @@ using namespace std;
 class Graph
 {
 private:
-	int rowCount;
-	int colCount;
-	vector<Node> nodes;
-	vector<Connector> connectors;
-	vector<Connector*> forbiddenConnector;
-	vector<Connector*> wallConnector;
-	vector<Connector*> wallGrope;
-	map<unsigned int, ObjectInfo> objects;
+	int rowCount = 0;
+	int colCount = 0;
+	vector<Node> nodes {};
+	vector<Connector> connectors {};
+	vector<Connector*> forbiddenConnector {};
+	vector<Connector*> wallConnector {};
+	vector<Connector*> wallGrope {};
+	map<unsigned int, ObjectInfo> objects {};
 
 
 private:

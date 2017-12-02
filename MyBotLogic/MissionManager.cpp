@@ -3,46 +3,21 @@
 #include "MyBotLogic\GameManager.h"
 #include <string>
 #include <algorithm>
+#include "LogicManager.h"
 
+#ifdef DEBUGBOT
+#include <fstream>
+using namespace std;
+static ofstream file{ "sortie.txt", ios::app };
+#endif // DEBUGBOT
 
 MissionManager MissionManager::instance;
 
 void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
-{
-
-	//Swapping whole agent identities
-	/*swap(agGoal, otherAg);
-	
-	//Swapping back their ids
-	int agGoalId = agGoal.getId();
-	int otherAgId = otherAg.getId();
-	agGoal.setId(otherAgId);
-	otherAg.setId(agGoalId);
-
-	//Swapping back their positions
-	int posGoal = agGoal.getPos();
-	agGoal.setPos(otherAg.getPos());
-	otherAg.setPos(posGoal);
-
-	
-	if (!agGoal.getPath().empty()) {
-		vector<const Connector*> nextMovePath;
-		nextMovePath.push_back(agGoal.getPath().back());
-		agGoal.getPath().pop_back();
-		otherAg.setPath(nextMovePath);
-	}
-*/
-
-
-
-	
-
-	/*MissionPtr pm1 = getMissionById(agGoal.getMissionId());
-	MissionPtr pm2 = getMissionById(otherAg.getMissionId());
-*/
-
-	//std::swap(pm1->receiverId, pm2->receiverId);
-	
+{	
+#ifdef DEBUGBOT_TREE
+	file << "Swap - idAgent : " << otherAg.getPos() << " - idAgentGoal : " << agGoal.getPos() << endl;
+#endif DEBUGBOT_TREE
 	int agGoalId = agGoal.getId();
 	int otherAgId = otherAg.getId();
 	
@@ -51,15 +26,36 @@ void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
 	agGoal.setMissionId(otherAg.getMissionId(), otherAg.getGoal());
 	otherAg.setMissionId(mId, gId);
 	
+	agGoal.setCurrState(&LogicManager::get().getMoveState());
+	otherAg.setCurrState(&LogicManager::get().getMoveState());
+
+	agGoal.setPathValid(true);
+	otherAg.setPathValid(true);
+
+	agGoal.setHasToWait(false);
+	otherAg.setHasToWait(false);
+
+	bool agSearching = agGoal.getIsSearching();
+	agGoal.setSearching(otherAg.getIsSearching());
+	otherAg.setSearching(agSearching);
+
 	//swap isHealping
 	bool isHelping1 = agGoal.getIsHelping();
 	agGoal.setHelping(otherAg.getIsHelping());
-	otherAg.setHelping(isHelping1);
+	otherAg.setHelping(isHelping1);	
 
 	//Swap paths
-	vector<const Connector*> path = agGoal.getPath();
-	agGoal.setPath(otherAg.getPath());
-	otherAg.setPath(path);
+	vector<const Connector*> path = otherAg.getPath();
+	otherAg.clearPath();
+	otherAg.addToPath(path.back());
+	path.pop_back();
+	if (path.empty()) {
+		agGoal.setSearching(true);
+		agGoal.setHasToWait(false);
+	}
+	else{
+		agGoal.setPath(path);
+	}
 
 	for_each(missions.begin(), missions.end(), [&](MissionPtr m) {
 		if (m->giverId == agGoalId || m->giverId == otherAgId) {
@@ -174,7 +170,7 @@ void MissionManager::update() {
 	//	}
 	//}
 
-	newGoalFound = false; //????
+	//newGoalFound = false; //????
 }
 
 void MissionManager::updatePendingMission(MissionPtr& mission) {
@@ -285,6 +281,7 @@ int MissionManager::getBestAgent(MissionPtr& mission) {
 			
 		}
 	}
+	return -1;
 }
 
 bool MissionManager::assignMission(MissionPtr newMission, MissionPtr currentMission, Agent* agent) {

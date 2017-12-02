@@ -4,7 +4,12 @@
 #include "GameManager.h"
 #include "MissionManager.h"
 
-#include "Debug.h"
+#ifdef DEBUGBOT
+#include <fstream>
+using namespace std;
+static ofstream file{ "sortie.txt", ios::app };
+#endif // DEBUGBOT
+
 
 int Graph::getPositionId(int x, int y) const noexcept {
 	if ((x >= 0) && (x < colCount*2) && (y >= 0) && (y < rowCount))
@@ -466,7 +471,9 @@ vector<const Connector*> Graph::getFarUnkown(int startId) {
 		closedList.push_back(current);
 	}
 #ifdef DEBUGBOT_TREE
-	file << current->connector->getBeginNode()->getId() << endl; 
+	if (current->connector != nullptr) {
+		file << current->connector->getBeginNode()->getId() << endl;
+	}
 #endif DEBUGBOT_TREE
 	vector<const Connector *> path;
 	if (current->ptr->getType() != Tile::ETileType::TileAttribute_Unknown)
@@ -500,7 +507,7 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 	Node* start{ &getNode(startId) };
 	int potential = 0;
 	int previousPotential = 0;
-	unsigned int plateId = -1;
+	int plateId = -1;
 	for (auto neighboursConnector : *start->getAvailableConnectors()) {
 		Node* neighbor = neighboursConnector->getEndNode();
 		if (neighbor->getVisited() == false) {
@@ -512,7 +519,7 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 				if (neighborConnector->getEndNode()->getId() == startId) {
 					continue;
 				}
-				if (!neighborConnector->hasObject()) {
+				if (neighborConnector->getObjects()==-1) {
 					potential += 2;
 				}
 				else {
@@ -529,9 +536,9 @@ vector<const Connector*> Graph::getNearUnkown(int startId) {
 						else if (find(obj.objectStates.begin(), obj.objectStates.end(), Object::EObjectState::ObjectState_Opened) != obj.objectStates.end() && neighborConnector->getEndNode()->getVisited() == false) {
 							potential += 15;
 						}
-						else {
-							++potential;
-						}
+					}
+					else {
+						++potential;
 					}
 				}
 				if (neighborConnector->getEndNode()->getVisited()) {

@@ -3,7 +3,12 @@
 
 #include "windows.h"
 #include "MissionManager.h"
-#include "Debug.h"
+
+#ifdef DEBUGBOT
+#include <fstream>
+using namespace std;
+static ofstream file{ "sortie.txt", ios::app };
+#endif // DEBUGBOT
 
 GameManager GameManager::instance;
 
@@ -45,7 +50,7 @@ void GameManager::update(TurnInfo & _turnInfo, std::vector<Action*>& _actionList
 	for (Agent * agent : agents)
 	{
 #ifdef DEBUGBOT_TREE
-		file << "\tId :  " << std::to_string(agent->getId()) << " - pos : " << std::to_string(agent->getPos());
+		file << "\tId :  " << std::to_string(agent->getId()) << " - pos : " << std::to_string(agent->getPos()) << endl;
 #endif DEBUGBOT_TREE
 		agent->makeDecisions();
 	}

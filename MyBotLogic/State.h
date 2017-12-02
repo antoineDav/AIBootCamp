@@ -10,4 +10,5 @@ public:
 	virtual void onEnter(Agent * agent)=0;
 	virtual Action * onUpdate(TurnInfo& _turnInfo, Agent * agent)=0;
 	virtual void onExit(Agent * agent)=0;
+	virtual char* stringType() = 0;
 };

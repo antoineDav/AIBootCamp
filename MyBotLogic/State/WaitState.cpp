@@ -5,6 +5,7 @@
 #include "../LogicManager.h"
 #include <algorithm>
 #include "MoveState.h"
+#include "../MissionManager.h"
 
 WaitState::WaitState()
 {
@@ -22,7 +23,12 @@ State * WaitState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 	});
 	if (found || agent->getPos() == agent->getGoal() || agent->getHasToWait()) {
 		for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
-			if (ag->getNextPos() == agent->getPos())
+			
+		/*	if (agent->getGoal() == agent->getPos() && ag->getNextPos() == agent->getPos() && ag->getId() != agent->getId()) {
+				MissionManager::get().swapMissions(*agent, *ag);
+				return &LogicManager::get().getMoveState();
+			}
+			else */if (ag->getNextPos() == agent->getPos())
 			{
 				ag->forceToWait(agent);
 			}
@@ -46,3 +52,9 @@ Action * WaitState::onUpdate(TurnInfo& _turnInfo, Agent * agent)
 void WaitState::onExit(Agent * agent)
 {
 }
+
+char* WaitState::stringType()
+{
+	return "WaitState";
+}
+

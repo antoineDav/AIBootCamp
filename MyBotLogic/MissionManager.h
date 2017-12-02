@@ -14,19 +14,19 @@ class MissionManager {
 public:
 
 	using MissionPtr = shared_ptr<Mission>;
-	int tour;
+	int tour=0;
 private:
 	Logger mLog;
 	
 
 	static MissionManager instance;
 
-	vector<MissionPtr> missions; 
+	vector<MissionPtr> missions {};
 
-	int IdGenerator;
+	int IdGenerator=0;
 	MissionManager() : IdGenerator{}, missions{}, tour{} {
 		//mLog.Init("\\INF781\\Labos\\AIBootCamp_3\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
-		mLog.Init("C:\\Users\\patn2904\\Documents\\INF781_IA\\AIBootCamp\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
+		mLog.Init("C:\\AIBootCamp\\LocalMatchResults\\gamelog", "missions.txt");
 	}
 	MissionManager(MissionManager&) = delete;
 	MissionManager& operator=(MissionManager&) = delete;
@@ -44,7 +44,7 @@ private:
 
 public:
 
-	bool newGoalFound = false;
+//	bool newGoalFound = false;
 	static MissionManager& get() {
 		return instance;
 	}
@@ -138,7 +138,7 @@ public:
 			ptr->mStatus = Mission::AVAILABLE;
 			ptr->receiverId = -1;
 
-			newGoalFound = true; //?? A REVOIR
+//			newGoalFound = true; //?? A REVOIR
 		}
 		
 	}
@@ -147,7 +147,7 @@ public:
 		if (!missionExists(-1, tileId)) {
 			MissionPtr mission = make_shared<Mission>(getNewId(), -1, 1, Mission::AVAILABLE, -1, tileId);
 			missions.push_back(mission);
-			newGoalFound = true;
+			//newGoalFound = true;
 
 			return mission;
 		}
@@ -168,7 +168,7 @@ public:
 	
 			missions.push_back(mission);
 	
-			newGoalFound = true; //A REVOIR
+			//newGoalFound = true; //A REVOIR
 	
 			return mission;
 		}
@@ -187,12 +187,12 @@ public:
 	void swapMissions(Agent& agGoal, Agent& otherAg);
 public:
 
-	void goalFound() {
+	/*void goalFound() {
 		newGoalFound = true;
 	}
 	bool isGoalFound() {
 		return newGoalFound;
-	}
+	}*/
 	
 	int getNewId() { return ++IdGenerator; }
 

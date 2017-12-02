@@ -11,4 +11,5 @@ public:
 	void onEnter(Agent * agent);
 	Action * onUpdate(TurnInfo& _turnInfo, Agent * agent);
 	void onExit(Agent * agent);
+	char* stringType();
 };

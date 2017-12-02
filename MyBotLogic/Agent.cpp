@@ -5,6 +5,12 @@
 #include "GameManager.h"
 #include "Graph.h"
 
+#ifdef DEBUGBOT
+#include <fstream>
+using namespace std;
+static ofstream file{ "sortie.txt", ios::app };
+#endif // DEBUGBOT
+
 Agent::Agent(int agentId)
 {
 	id = agentId;
@@ -38,6 +44,9 @@ void Agent::stateChange(TurnInfo& _turnInfo)
 		count--;
 		trans = currState->getTransition(_turnInfo, this);
 	}
+#ifdef DEBUGBOT_TREE
+	file << "\tId :  " << std::to_string(this->getId()) << " - pos : " << std::to_string(this->getPos()) << " - " << currState->stringType() << endl;
+#endif DEBUGBOT_TREE
 }
 
 void Agent::checkPath()

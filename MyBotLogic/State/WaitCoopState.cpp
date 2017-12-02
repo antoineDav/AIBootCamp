@@ -53,3 +53,8 @@ void WaitCoopState::onExit(Agent * agent)
 		graphe.addForbiddenConnector(co2);
 	}
 }
+
+char* WaitCoopState::stringType()
+{
+	return "WaitCoopState";
+}

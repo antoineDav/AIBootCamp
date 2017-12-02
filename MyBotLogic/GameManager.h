@@ -5,6 +5,7 @@
 #include "Agent.h"
 #include "Utility.h"
 #include <vector>
+#include "Debug.h"
 
 #ifdef DEBUG
 class DuplicateObjectiveException;
@@ -18,7 +19,7 @@ private:
 
 	class AgentPtrComparison {
 	private:
-		bool reverse;
+		bool reverse=false;
 	public:
 		AgentPtrComparison(const bool& revparam = false) : reverse{ revparam } {}
 		bool operator() (Agent* _lagent, Agent* _ragent) const
@@ -30,7 +31,7 @@ private:
 		}
 	};
 
-	vector<Agent*> agents;
+	vector<Agent*> agents = {};
 
 
 	GameManager();
