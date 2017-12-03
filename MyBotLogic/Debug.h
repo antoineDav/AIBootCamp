@@ -1,9 +1,8 @@
 #pragma once
 
 //#define DEBUGBOT_GRAPH
-//#define DEBUGBOT_TREE
-//#define DEBUGBOT_MISSION
-#define DEBUGBOT
+#define DEBUGBOT_TREE
+#define DEBUGBOT_MISSION
 
 #ifdef DEBUGBOT_GRAPH
 #define DEBUGBOT

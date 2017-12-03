@@ -44,14 +44,21 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 	}
 
 	// Détermine si l'agent se trouve devant une porte avec plaque de pression distante ==> COOP
-	const Connector* co = agent->getPath().back();
-	if (co->hasDoor()) {
-		std::set<Object::EObjectState> objectStates = graph.getObjects()[co->getObjects()].objectStates;
-		if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty() && objectStates.find(Object::ObjectState_Opened) == objectStates.end())
-		{
-			MissionManager& mm = MissionManager::get();
-			mm.requestMission(agent->getId(), co->getObjects(), co->getEndNode()->getId());
-			return &LogicManager::get().getWaitCoopState(); 
+	if (agent->getPath().size() == 0)
+	{
+		return &LogicManager::get().getWaitState();
+	}
+	
+	else {
+		const Connector * co = agent->getPath().back();
+		if (co->hasDoor()) {
+			std::set<Object::EObjectState> objectStates = graph.getObjects()[co->getObjects()].objectStates;
+			if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty() && objectStates.find(Object::ObjectState_Opened) == objectStates.end())
+			{
+				MissionManager& mm = MissionManager::get();
+				mm.requestMission(agent->getId(), co->getObjects(), co->getEndNode()->getId());
+				return &LogicManager::get().getWaitCoopState(); 
+			}
 		}
 	}
 	return nullptr;

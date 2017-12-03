@@ -62,7 +62,11 @@ public:
 	int dist(int n1, int n2) const noexcept {
 		const Node* node1{ &nodes[n1] };
 		const Node* node2{ &nodes[n2] };
-		return (abs(node1->getX() - node2->getX()) + abs(node1->getY() - node2->getY()));
+		int x = abs(node1->getX() - node2->getX());
+		int y = abs(node1->getY() - node2->getY());
+		int dist;
+		(y > x) ? dist = y : dist = (x + y) / 2;
+		return dist;
 	}
 
 	vector<Connector>& getConnectors() { return connectors; }

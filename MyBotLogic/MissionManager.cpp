@@ -45,20 +45,7 @@ void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
 	agGoal.setHelping(otherAg.getIsHelping());
 	otherAg.setHelping(isHelping1);	
 
-	//Swap paths
-	vector<const Connector*> path = otherAg.getPath();
-	otherAg.clearPath();
-	otherAg.addToPath(path.back());
-	path.pop_back();
-
-	if (otherAg.getPath().size() > 1) {
-		agGoal.setPath(path);
-	}
-	else {
-		agGoal.setPath(GameManager::get().getGraph().getNearUnkown(agGoal.getPos()));
-		agGoal.setSearching(true);
-		agGoal.setHasToWait(false);
-	}
+	
 
 	for_each(missions.begin(), missions.end(), [&](MissionPtr m) {
 		if (m->giverId == agGoalId || m->giverId == otherAgId) {
@@ -69,7 +56,26 @@ void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
 		}
 	});
 
+	//Swap paths
+	vector<const Connector*> path = otherAg.getPath();
+	otherAg.clearPath();
+	otherAg.addToPath(path.back());
+	path.pop_back();
 
+	if (otherAg.getPath().size() > 1) {
+		agGoal.setPath(path);
+	}
+	else {
+		if (agGoal.getMissionId() != -1)
+		{
+			agGoal.setPath(GameManager::get().getGraph().getPath(agGoal.getPos(), agGoal.getGoal()));
+		}
+		else {
+			agGoal.setPath(GameManager::get().getGraph().getNearUnkown(agGoal.getPos()));
+		}
+		agGoal.setSearching(true);
+		agGoal.setHasToWait(false);
+	}
 }
 
 

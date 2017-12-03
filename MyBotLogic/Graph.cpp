@@ -211,11 +211,7 @@ public:
 	HeuristicManhattan(const Node* _goal) noexcept
 		: goal{ _goal } {}
 	int operator()(const Node* node) const noexcept {
-		int x = abs(goal->getX() - node->getX());
-		int y = abs(goal->getY() - node->getY());
-		int dist;
-		(y > x) ? dist = y : dist = (x + y) / 2;
-		return dist;
+		return (abs(goal->getX() - node->getX()) + abs(goal->getY() - node->getY()));
 	}
 };
 
