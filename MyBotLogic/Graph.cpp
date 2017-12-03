@@ -121,11 +121,6 @@ void Graph::updateNodeObjects(const std::map<unsigned int, ObjectInfo>& in_objec
 				//Connector du Node a l'autre bout de la connexion
 				connector = connector->getEndNode()->getAvailableConnector(connector->getInvertDirection());
 				connector->setObject(in_object.second.objectID);
-
-				//Mark zone as dirty if new object potentially separates a zone in two
-				Node* beginNode = connector->getBeginNode();
-				Node* endNode = connector->getEndNode();
-
 			}
 		}
 	});

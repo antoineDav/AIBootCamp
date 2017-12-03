@@ -15,7 +15,6 @@ private:
 	static GameManager instance;
 
 	Graph graph;
-	//vector<int> availableObjectives;
 
 	class AgentPtrComparison {
 	private:
@@ -39,7 +38,6 @@ private:
 	GameManager& operator=(GameManager&) = delete;
 	~GameManager();
 
-	/*bool newGoalFound;*/
 
 public:
 	static GameManager& get() {
@@ -67,27 +65,7 @@ public:
 	Graph& getGraph() {
 		return graph;
 	}
-//	const vector<int>& getAvailableObjectives() {
-//		return availableObjectives;
-//	}
-//	void takeObjective(int id) {
-//		availableObjectives.erase(std::find(availableObjectives.begin(), availableObjectives.end(), id));
-//	}
-//	void returnObjective(int id) {
-//#ifdef DEBUG
-//		if (std::find(availableObjectives.begin(), availableObjectives.end(), id) != availableObjectives.end()) {
-//			throw new DuplicateObjectiveException;
-//		}
-//#endif // DEBUG
-//		availableObjectives.push_back(id);
-//		newGoalFound = true;
-//	}
-//	void goalFound() {
-//		newGoalFound = true;
-//	}
-//	bool isGoalFound() {
-//		return newGoalFound;
-//	}
+
 	void start(LevelInfo& _levelInfo);
 	void update(TurnInfo& _turnInfo, std::vector<Action*>& _actionList);
 };

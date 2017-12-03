@@ -8,7 +8,6 @@ class Connector {
 private:
 	Node * beginNode;
 	Node * endNode;
-	//Logger log;
 	Tile::ETilePosition direction;
 	int _objectId = -1;
 	bool isToDestroy;

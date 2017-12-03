@@ -234,7 +234,6 @@ int MissionManager::getBestAgent(MissionPtr& mission) {
 		if (minNPC == nullptr) {
 
 			//Goal is forbidden for all agents
-			//mission->mStatus = Mission::IMPOSSIBLE;
 			return -1;
 			
 		}

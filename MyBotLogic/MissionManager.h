@@ -47,8 +47,6 @@ private:
 	};
 
 public:
-
-//	bool newGoalFound = false;
 	static MissionManager& get() {
 		return instance;
 	}
@@ -141,8 +139,6 @@ public:
 
 			ptr->mStatus = Mission::AVAILABLE;
 			ptr->receiverId = -1;
-
-//			newGoalFound = true; //?? A REVOIR
 		}
 		
 	}
@@ -151,8 +147,6 @@ public:
 		if (!missionExists(-1, tileId)) {
 			MissionPtr mission = make_shared<Mission>(getNewId(), -1, 1, Mission::AVAILABLE, -1, tileId);
 			missions.push_back(mission);
-			//newGoalFound = true;
-
 			return mission;
 		}
 
@@ -171,9 +165,6 @@ public:
 			MissionPtr mission = make_shared</*Coop*/Mission>(getNewId(), giverId, pLvl, status, condId, tileId, ppId);
 	
 			missions.push_back(mission);
-	
-			//newGoalFound = true; //A REVOIR
-	
 			return mission;
 		}
 
@@ -189,15 +180,8 @@ public:
 	}
 
 	void swapMissions(Agent& agGoal, Agent& otherAg);
-public:
 
-	/*void goalFound() {
-		newGoalFound = true;
-	}
-	bool isGoalFound() {
-		return newGoalFound;
-	}*/
-	
+public:
 	int getNewId() { return ++IdGenerator; }
 
 	void requestMission(int npcId, int pressurePlateId, int conditionTile);

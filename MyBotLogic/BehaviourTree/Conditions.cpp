@@ -43,7 +43,7 @@ Task::Result IsPathValid::execute(Agent * ag)
 
 Task::Result IsNewPathNeeded::execute(Agent * ag)
 {
-	if (!ag->getPathValid() || ag->getPath().size() == 0 /*|| MissionManager::get().isGoalFound()*/) {
+	if (!ag->getPathValid() || ag->getPath().size() == 0) {
 		return this->SUCCESS;
 	}
 	else {

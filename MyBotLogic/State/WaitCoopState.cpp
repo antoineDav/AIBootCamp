@@ -48,7 +48,6 @@ void WaitCoopState::onExit(Agent * agent)
 		&& objectStates.find(Object::ObjectState_Opened) == objectStates.end())
 	{
 		// Invalid the connector
-		/*agent->setPathValid(false);*/
 		Connector* co2 = const_cast<Connector* >(co);
 		graphe.addForbiddenConnector(co2);
 	}
