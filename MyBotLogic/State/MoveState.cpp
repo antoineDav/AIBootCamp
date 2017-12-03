@@ -44,12 +44,13 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 	}
 
 	// Détermine si l'agent se trouve devant une porte avec plaque de pression distante ==> COOP
+/*
 	if (agent->getPath().size() == 0)
 	{
 		return &LogicManager::get().getWaitState();
 	}
 	
-	else {
+	else {*/
 		const Connector * co = agent->getPath().back();
 		if (co->hasDoor()) {
 			std::set<Object::EObjectState> objectStates = graph.getObjects()[co->getObjects()].objectStates;
@@ -60,7 +61,7 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 				return &LogicManager::get().getWaitCoopState(); 
 			}
 		}
-	}
+	//}
 	return nullptr;
 }
 

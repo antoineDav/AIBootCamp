@@ -66,13 +66,7 @@ void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
 		agGoal.setPath(path);
 	}
 	else {
-		if (agGoal.getMissionId() != -1)
-		{
-			agGoal.setPath(GameManager::get().getGraph().getPath(agGoal.getPos(), agGoal.getGoal()));
-		}
-		else {
-			agGoal.setPath(GameManager::get().getGraph().getNearUnkown(agGoal.getPos()));
-		}
+		LogicManager::get().getDecisionTree().execute(&agGoal);
 		agGoal.setSearching(true);
 		agGoal.setHasToWait(false);
 	}
