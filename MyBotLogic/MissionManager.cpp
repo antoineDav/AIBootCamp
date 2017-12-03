@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "LogicManager.h"
 
+
 #ifdef DEBUGBOT
 #include <fstream>
 using namespace std;
@@ -49,12 +50,14 @@ void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
 	otherAg.clearPath();
 	otherAg.addToPath(path.back());
 	path.pop_back();
-	if (path.empty()) {
+
+	if (otherAg.getPath().size() > 1) {
+		agGoal.setPath(path);
+	}
+	else {
+		agGoal.setPath(GameManager::get().getGraph().getNearUnkown(agGoal.getPos()));
 		agGoal.setSearching(true);
 		agGoal.setHasToWait(false);
-	}
-	else{
-		agGoal.setPath(path);
 	}
 
 	for_each(missions.begin(), missions.end(), [&](MissionPtr m) {
@@ -69,12 +72,6 @@ void MissionManager::swapMissions(Agent& agGoal, Agent& otherAg)
 
 }
 
-//void MissionManager::missionDone(int npcId, int missionId) {
-//	//TODO change isHelping in agent
-//	MissionPtr ptr = getMissionById(missionId);
-//	
-//	ptr->mStatus = Mission::ACCOMPLISHED;
-//}
 
 void MissionManager::requestMission(int npcId, int doorId, int conditionTile) {
 	Graph& graph = GameManager::get().getGraph();
@@ -99,7 +96,7 @@ void MissionManager::requestMission(int npcId, int doorId, int conditionTile) {
 void MissionManager::update() {
 	GameManager& gm = GameManager::get();
 
-
+#ifdef DEBUGBOT_MISSION
 	//mLog.Log("Missions on turn " + to_string(gm.))
 	mLog.Log("	-------------------NEW TURN!! " + std::to_string(++tour) +"------------------\n ");
 	mLog.Log("\n\nAgents : \n");
@@ -107,8 +104,10 @@ void MissionManager::update() {
 	{
 		mLog.Log("Id :  " + std::to_string(agent->getId()) + " - pos : " + std::to_string(agent->getPos()));
 	}
+#endif
 	//Update pending missions if possible
 	for (auto& mission : missions) {		
+#ifdef DEBUGBOT_MISSION
 		mLog.Log("\nMission n " + std::to_string(mission->missionId));
 		mLog.Log("	GiverId " + std::to_string(mission->giverId));
 		mLog.Log("	ReceiverId " + std::to_string(mission->receiverId));
@@ -117,7 +116,7 @@ void MissionManager::update() {
 		mLog.Log("	priority " + std::to_string(mission->priorityLvl));
 		mLog.Log("	status " + std::to_string(mission->mStatus));
 		mLog.Log("	--------------------------------------------------\n ");
-
+#endif
 		if (mission->mStatus == Mission::PENDING) {
 			updatePendingMission(mission);
 		}
@@ -137,40 +136,6 @@ void MissionManager::update() {
 		}
 	
 	}
-	
-	//for (Agent* agent : gm.getAgents()) {
-	//	if (!agent->getIsHelping()) {
-	//		int currentMissionId = agent->getMissionId();
-	//		//Check if coop missions are available
-	//		if (!availableCoopMissions.empty()) {
-	//			
-	//			int newMissionId = getBestAgent(availableCoopMissions, agent);
-	//
-	//			if (newMissionId != -1) { //If coop mission assigned
-	//
-	//				if (currentMissionId != -1) {
-	//					returnGoalMission(currentMissionId);
-	//				}
-	//
-	//				agent->setHelping(true);
-	//				takeCoopMission(newMissionId, agent->getId());
-	//			}
-	//		}
-	//		else if (!agent->hasReachedGoal()) { //Check if goal missions are available
-	//			if (!availableGoalMissions.empty() && currentMissionId == -1
-	//				|| newGoalFound && currentMissionId != -1) {
-	//				returnGoalMission(currentMissionId);
-	//				int newMissionId = getBestAgent(availableGoalMissions, agent);
-	//				if (newMissionId != -1) { //If goal mission assigned
-	//					agent->setHelping(false);
-	//					takeGoalMission(newMissionId);
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-
-	//newGoalFound = false; //????
 }
 
 void MissionManager::updatePendingMission(MissionPtr& mission) {

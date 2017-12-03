@@ -6,7 +6,7 @@
 
 #include "WaitState.h"
 #include "../MissionManager.h"
-//#include <chrono>
+
 
 MoveState::MoveState()
 {
@@ -15,6 +15,7 @@ MoveState::MoveState()
 State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {	
 	Graph& graph = GameManager::get().getGraph();
+
 	bool found = false;
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
 		// Determine si un autre agent va tenter de se déplacer sur la même position que notre agent (CONFLIT) 
@@ -24,46 +25,36 @@ State * MoveState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 			found = true;
 		}
 	});
-	bool startMoving = false;
+
 	if (found || agent->getPos() == agent->getGoal() || agent->getHasToWait()) {
 		for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
-			if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getPos()/* && (ag->getCurrState() == &LogicManager::get().getWaitState() || ag->getPath().empty())*/)
+			// propage le wait
+			if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getPos())
 			{
-				if (agent->getGoal() == agent->getPos()/* && !startMoving*/) {
-					//MissionManager::get().swapMissions(*agent, *ag);
-					/*ag->setHasToWait(false);
-					agent->setHasToWait(false);*/
-					//startMoving = true;
-					//return nullptr;
+				if (agent->getGoal() == agent->getPos()) {
+					MissionManager::get().swapMissions(*agent, *ag);
+					return nullptr;
 				}
 				else {
 					ag->forceToWait(agent);
 				}
 			}
 		});
-		if (startMoving) return &LogicManager::get().getMoveState();
 		return &LogicManager::get().getWaitState();
 	}
 
-	// Détermine si l'agent se trouve devant une porte avec plaque de pression distante
+	// Détermine si l'agent se trouve devant une porte avec plaque de pression distante ==> COOP
 	const Connector* co = agent->getPath().back();
 	if (co->hasDoor()) {
 		std::set<Object::EObjectState> objectStates = graph.getObjects()[co->getObjects()].objectStates;
-		if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty()
-			&& objectStates.find(Object::ObjectState_Opened) == objectStates.end())
+		if (!GameManager::get().getGraph().getObjects()[co->getObjects()].connectedTo.empty() && objectStates.find(Object::ObjectState_Opened) == objectStates.end())
 		{
 			MissionManager& mm = MissionManager::get();
-			
 			mm.requestMission(agent->getId(), co->getObjects(), co->getEndNode()->getId());
-			//mm.createGoalMission(co->getEndNode()->getId());
-
 			return &LogicManager::get().getWaitCoopState(); 
 		}
-		return nullptr;
 	}
-	else {
-		return nullptr;
-	}
+	return nullptr;
 }
 
 void MoveState::onEnter(Agent * agent)

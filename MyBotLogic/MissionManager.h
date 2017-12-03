@@ -1,3 +1,4 @@
+#pragma once
 #include "MyBotLogic\Mission.h"
 #include "MyBotLogic\Agent.h"
 
@@ -6,6 +7,7 @@
 #include <memory>
 #include <algorithm>
 #include "Logger.h"
+#include "Debug.h"
 
 using namespace std;
 
@@ -25,8 +27,10 @@ private:
 
 	int IdGenerator=0;
 	MissionManager() : IdGenerator{}, missions{}, tour{} {
+#ifdef DEBUGBOT_MISSION
 		//mLog.Init("\\INF781\\Labos\\AIBootCamp_3\\AIBot\\LocalMatchResults\\gamelog", "missions.txt");
-		mLog.Init("C:\\AIBootCamp\\LocalMatchResults\\gamelog", "missions.txt");
+		mLog.Init("C:\\Users\\dava3202\\Documents\\Cours\\IA\\CD_AIBootCamp\\AIBootCamp", "missions.txt");
+#endif
 	}
 	MissionManager(MissionManager&) = delete;
 	MissionManager& operator=(MissionManager&) = delete;

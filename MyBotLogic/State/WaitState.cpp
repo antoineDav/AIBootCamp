@@ -14,27 +14,31 @@ WaitState::WaitState()
 State * WaitState::getTransition(TurnInfo & _turnInfo, Agent * agent)
 {
 	Graph& graph = GameManager::get().getGraph();
+	
 	bool found = false;
-
 	for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
-		if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getNextPos() && (graph.dist(agent->getPos(), agent->getGoal()) < graph.dist(ag->getPos(), ag->getGoal()) || (graph.dist(agent->getPos(), agent->getGoal()) == graph.dist(ag->getPos(), ag->getGoal()) && agent->getId() > ag->getId()))) {
+		if (ag->getId() != agent->getId() && ag->getNextPos() == agent->getNextPos() && (graph.dist(agent->getPos(), agent->getGoal()) < graph.dist(ag->getPos(), ag->getGoal())
+			|| (graph.dist(agent->getPos(), agent->getGoal()) == graph.dist(ag->getPos(), ag->getGoal()) && agent->getId() > ag->getId()))) {
 			found = true;
 		}
 	});
+
 	if (found || agent->getPos() == agent->getGoal() || agent->getHasToWait()) {
 		for_each(GameManager::get().getBeginAgent(), GameManager::get().getEndAgent(), [&](Agent * ag) {
-			
-		/*	if (agent->getGoal() == agent->getPos() && ag->getNextPos() == agent->getPos() && ag->getId() != agent->getId()) {
+			// Swap mission
+			if (agent->getGoal() == agent->getPos() && ag->getNextPos() == agent->getPos() && ag->getId() != agent->getId()) {
 				MissionManager::get().swapMissions(*agent, *ag);
 				return &LogicManager::get().getMoveState();
 			}
-			else */if (ag->getNextPos() == agent->getPos())
+			// Reste en wait
+			else if (ag->getNextPos() == agent->getPos())
 			{
 				ag->forceToWait(agent);
 			}
 		});
 		return nullptr;
 	}
+	// pas de conflit
 	else {
 		return &LogicManager::get().getMoveState();
 	}

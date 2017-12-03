@@ -83,7 +83,7 @@ void Graph::updateNodesType(const std::map<unsigned int, TileInfo>& tiles) noexc
 		const map<Tile::ETilePosition, const char*> tilePositionString{
 			{ Tile::ETilePosition::NE , "NE" },
 			{ Tile::ETilePosition::E, "E" },
-			{ Tile::ETilePosition::SE, "S" },
+			{ Tile::ETilePosition::SE, "SE" },
 			{ Tile::ETilePosition::SW, "SW" },
 			{ Tile::ETilePosition::W, "W" },
 			{ Tile::ETilePosition::NW, "NW" },
@@ -91,7 +91,7 @@ void Graph::updateNodesType(const std::map<unsigned int, TileInfo>& tiles) noexc
 		};
 		file << "\tType : " << tileTypeString.find(tile.second.tileType)->second << endl;
 		std::vector<Connector*>* connectors = GameManager::get().getGraph().getNode(tile.first).getAvailableConnectors();
-		for (auto connector : *connectors){
+		for (auto& connector : *connectors){
 			file << "\tConnector : " << connector->getBeginNode()->getId() << " -> " << connector->getEndNode()->getId() << endl;
 			file << "\t\t\tDirection : " << tilePositionString.find(connector->getDirection())->second << endl;
 			file << "\t\t\tObject Id : " << connector->getObjects() << endl;
@@ -181,6 +181,13 @@ void Graph::updateConnectorsWithObjects(const std::map<unsigned int, ObjectInfo>
 				wG->getBeginNode()->popConnector(wG->getEndNode());
 				wG->setIsToDestroy(false);
 				wG->getBeginNode()->addAvailableConnector(wG);
+
+				auto it = find(wallConnector.begin(), wallConnector.end(), wG);
+
+				if (it != wallConnector.end()) {
+					wallConnector.erase(it);
+				}
+
 				continue;
 			}
 		}
@@ -247,7 +254,7 @@ vector<const Connector*> Graph::getPath(int startId, int goalId) {
 	std::map<unsigned int, ObjectInfo>& obj = GameManager::get().getGraph().getObjects();
 	if (GameManager::get().getAgents().size() == 1) {
 		int valid = 0;
-		for (auto connector : *end->getAvailableConnectors()) {
+		for (auto& connector : *end->getAvailableConnectors()) {
 			if (connector->getObjects() < 0) {
 				++valid;
 			}

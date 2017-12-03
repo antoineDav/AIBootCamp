@@ -1,5 +1,6 @@
 #pragma once
 #include "Globals.h"
+#include "Logger.h"
 
 class Node;
 
@@ -7,6 +8,7 @@ class Connector {
 private:
 	Node * beginNode;
 	Node * endNode;
+	//Logger log;
 	Tile::ETilePosition direction;
 	int _objectId = -1;
 	bool isToDestroy;
@@ -49,4 +51,5 @@ public:
 	void setIsGrope() { isGrope = true; };
 
 	bool hasDoor() const noexcept;
+
 };
